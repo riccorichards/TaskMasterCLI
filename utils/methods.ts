@@ -1,5 +1,6 @@
 import { existingCmds } from "@/tempCont/index";
 import { makeRequest } from "./makeRequest";
+import { Command } from "@/app/page";
 
 class CmdsMethods {
   static help() {
@@ -21,6 +22,39 @@ class CmdsMethods {
       if (!res) throw new Error("Error while creating a new task");
 
       return `Creating a new task done successfully: ${JSON.stringify(res)}`;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  static async addPeriod(period: string) {
+    try {
+      const res = await makeRequest("/api/time-stats/add-period", "POST", {
+        period,
+      });
+      if (!res) throw new Error("Error while add a new period");
+
+      return `Your micro goal will be finished at ${JSON.stringify(res)}`;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  static async addHrsForPeriod({
+    sumTimeHrs,
+    timeStatsID,
+  }: {
+    sumTimeHrs: number;
+    timeStatsID: string;
+  }) {
+    try {
+      const res = await makeRequest("/api/time-stats/add-sum-hrs", "PUT", {
+        sumTimeHrs,
+        timeStatsID,
+      });
+      if (!res) throw new Error("Error while add a new period");
+
+      return `Your micro goal will be finished at ${JSON.stringify(res)}`;
     } catch (error) {
       console.log(error);
     }
@@ -171,7 +205,50 @@ class CmdsMethods {
       console.log(error);
     }
   }
-  
+
+  static formatDuration(seconds: number): string {
+    seconds += 1;
+
+    const hours = Math.floor(seconds / 3600);
+    let remainingSeconds = seconds % 3600;
+    const minutes = Math.floor(remainingSeconds / 60);
+    remainingSeconds %= 60;
+
+    return [hours, minutes, remainingSeconds]
+      .map((val) => String(val).padStart(2, "0"))
+      .join(":");
+  }
+
+  static terminalAreaLativeCmds(command: string, area: string) {
+    switch (area) {
+      case "timer":
+        const runTimerRegax = /^run timer for\s*(.+)$/;
+        const pauseTimetRegax = /^pause timer where title =\s*(.+)$/;
+        const reRunTimetRegax = /^re-run timer where title =\s*(.+)$/;
+        if (
+          runTimerRegax.test(command) ||
+          pauseTimetRegax.test(command) ||
+          reRunTimetRegax.test(command)
+        ) {
+          return true;
+        }
+        return false;
+    }
+  }
+
+  static responseTextOutput(command: string, type: string, output: string) {
+    return type === "error"
+      ? {
+          type: "text",
+          command,
+          textOutput: "Error: Unknown command",
+        }
+      : {
+          type: "text",
+          command,
+          textOutput: `Success: ${output}`,
+        };
+  }
 }
 
 export default CmdsMethods;

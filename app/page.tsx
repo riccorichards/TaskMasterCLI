@@ -1,5 +1,8 @@
 "use client";
 
+import Input from "@/components/Input";
+import MemoizedTerminal from "@/components/Terminal";
+import Context from "@/utils/Context";
 import { defineProcess } from "@/utils/defineProcess";
 import { useState, useEffect, useRef } from "react";
 
@@ -19,6 +22,7 @@ type ComponentCommand = {
 export type Command = TextCommand | ComponentCommand;
 
 export default function Home() {
+  const [terminalPlace, setTerminalPlace] = useState<string>("/general");
   const [input, setInput] = useState<string>("");
   const [commands, setCommands] = useState<Command[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -43,48 +47,70 @@ export default function Home() {
     }
   };
 
+  useEffect(() => {
+    const handleKeyboard = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (commands.length > 1) {
+        if (e.key === "Up") {
+          const previousCmd = commands[commands.length - 1].command;
+          setInput(previousCmd);
+        } else if (e.key === "Down") {
+        }
+      }
+    };
+    handleKeyboard;
+  }, [commands]);
+
   const reset = () => {
-    return setCommands([]);
+    setCommands([]);
+  };
+
+  const resetExceptTimerCmds = () => {
+    const cmdTimer = "timer";
+    const filteredCmds = commands.filter((cmd) => {
+      const cmdWords = cmd.command.split(" ");
+      return cmdWords.includes(cmdTimer) && cmd.type === "component";
+    });
+
+    setCommands(filteredCmds);
   };
 
   const processCommand = (command: string): Command | void => {
-    const outPut = defineProcess({ command, reset });
+    const outPut = defineProcess({
+      command,
+      reset,
+      resetExceptTimerCmds,
+      setTerminalPlace,
+      terminalPlace,
+    });
     return outPut;
   };
 
+  const removeCommand = (commandToRemove: string): void => {
+    setCommands((currentCommands) =>
+      currentCommands.filter((cmd) => cmd.command !== commandToRemove)
+    );
+  };
+
   return (
-    <div>
-      <div className="cli-output">
-        {commands.map((cmd, index) => (
-          <div key={index}>
-            <div>
-              <span className="whitespace-nowrap">Beta version/Ricco/&gt;</span>{" "}
-              {cmd.command}
-            </div>
-            <div>
-              {cmd.type === "text" ? (
-                cmd.textOutput
-              ) : cmd.type === "component" ? (
-                cmd.props ? (
-                  <cmd.componentOutput {...cmd.props} />
-                ) : (
-                  <cmd.componentOutput />
-                )
-              ) : null}
-            </div>
-          </div>
-        ))}
-      </div>
-      <span className="flex gap-2 items-center">
-        <span className="whitespace-nowrap">Beta version/Ricco/&gt;</span>
-        <input
-          ref={inputRef}
-          className="cli-input"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleCommand}
+    <Context.Provider value={{ removeCommand }}>
+      <div>
+        <MemoizedTerminal
+          commands={commands}
+          inputRef={inputRef}
+          terminalPlace={terminalPlace}
         />
-      </span>
-    </div>
+        <span className="flex gap-2 items-center">
+          <span className="whitespace-nowrap">
+            {`Beta version/ricco${terminalPlace}`}/&gt;
+          </span>
+          <Input
+            inputRef={inputRef}
+            input={input}
+            setInput={setInput}
+            handleCommand={handleCommand}
+          />
+        </span>
+      </div>
+    </Context.Provider>
   );
 }

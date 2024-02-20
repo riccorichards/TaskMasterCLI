@@ -6,7 +6,9 @@ html,
 body {
   background-color: black;
   color: rgb(8, 201, 8);
-  font-size: 10px;
+  font-size: 14px;
+  height: 100vh;
+  position: relative;
 }
 
 .cli-input {

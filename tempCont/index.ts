@@ -6,27 +6,27 @@ export const existingCmds = [
   },
   {
     id: 2,
-    cmd: "insert end period = [New End Period]",
-    desc: "Set a new end period for the current task.",
+    cmd: "insert journey duration: [New Deadline]",
+    desc: "Set a new period for the current goal.",
   },
   {
     id: 3,
-    cmd: "insert time for period = [new Time]",
+    cmd: "insert time for period where id = [Time Stats ID] set hrs = [new Time]",
     desc: "Insert a new time entry for a specified period.",
   },
   {
     id: 4,
-    cmd: "complete time",
+    cmd: "define complete time",
     desc: "Define already complete time in percentage.",
   },
   {
     id: 5,
-    cmd: "task",
+    cmd: "task stats",
     desc: "Define result in percentage between total amount tasks and complete taks.",
   },
   {
     id: 6,
-    cmd: "quality",
+    cmd: "define my work quality",
     desc: "Defines your quality in percentage.",
   },
   {
@@ -96,28 +96,28 @@ export const existingCmds = [
   },
   {
     id: 20,
-    cmd: "run timer",
+    cmd: "run timer for [Task Title]",
     desc: "Start the timer for tracking time on tasks.",
   },
   {
     id: 21,
-    cmd: "pause timer",
-    desc: "Pause the currently running timer."
+    cmd: "pause timer where title = [Current Title]",
+    desc: "Pause the currently running timer.",
   },
   {
     id: 22,
-    cmd: "reset timer",
-    desc: "Reset the timer to zero."
+    cmd: "re-run timer where title = [Current Title]",
+    desc: "Runs timer from the same place where it was stoppen.",
   },
   {
     id: 23,
-    cmd: "save timer",
-    desc: "Save the current time from the timer to the task.",
+    cmd: "reset timer",
+    desc: "Reset the timer to zero.",
   },
   {
     id: 24,
-    cmd: "show run task",
-    desc: "Display the task that is currently being timed.",
+    cmd: "save timer where title = [Current Title]",
+    desc: "Save the current time from the timer to the task.",
   },
   {
     id: 25,
@@ -130,8 +130,13 @@ export const existingCmds = [
     desc: "Retrieve an existing task by its ID.",
   },
   {
-    id: 26,
+    id: 27,
     cmd: "select * from dailyTask",
     desc: "Retrieve all existing tasks from dailyTask.",
+  },
+  {
+    id: 28,
+    cmd: "clear except timer commands",
+    desc: "Clear all terminal except timer commands.",
   },
 ];

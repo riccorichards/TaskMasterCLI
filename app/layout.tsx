@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Press_Start_2P } from "next/font/google";
+import { Fredoka } from "next/font/google";
 import "./globals.css";
 
-const inter = Press_Start_2P({ subsets: ["latin"], weight: ["400"] });
+const inter = Fredoka({ subsets: ["latin"], weight: ["400"] });
 
 export const metadata: Metadata = {
   title: "Create Next App",
