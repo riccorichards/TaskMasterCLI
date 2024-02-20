@@ -101,42 +101,33 @@ export const existingCmds = [
   },
   {
     id: 21,
-    cmd: "pause timer where title = [Current Title]",
-    desc: "Pause the currently running timer.",
-  },
-  {
-    id: 22,
-    cmd: "re-run timer where title = [Current Title]",
-    desc: "Runs timer from the same place where it was stoppen.",
-  },
-  {
-    id: 23,
-    cmd: "reset timer",
-    desc: "Reset the timer to zero.",
-  },
-  {
-    id: 24,
-    cmd: "save timer where title = [Current Title]",
-    desc: "Save the current time from the timer to the task.",
-  },
-  {
-    id: 25,
     cmd: "day finish",
     desc: "Finished working process for day and storing tasks with their status.",
   },
   {
-    id: 26,
+    id: 22,
     cmd: "select * from dailyTask where id = [Task ID]",
     desc: "Retrieve an existing task by its ID.",
   },
   {
-    id: 27,
+    id: 23,
     cmd: "select * from dailyTask",
     desc: "Retrieve all existing tasks from dailyTask.",
   },
   {
-    id: 28,
+    id: 24,
     cmd: "clear except timer commands",
     desc: "Clear all terminal except timer commands.",
   },
+  {
+    id: 25,
+    cmd: "insert node: [Main Goal]",
+    desc: "creates main goal, start of the tree.",
+  },
+  {
+    id: 26,
+    cmd: "insert node: [Main Goal]",
+    desc: "creates main goal, start of the tree.",
+  },
 ];
+

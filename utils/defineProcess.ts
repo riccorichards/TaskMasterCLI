@@ -2,6 +2,7 @@ import { Command } from "@/app/page";
 import CmdsMethods from "./methods";
 import mainTerminalCmd from "./mainTerminalCmd";
 import MemoizeTimer from "@/components/Timer";
+import TreeMap from "@/components/TreeMap";
 
 interface parametersType {
   originalCommand: string;
@@ -12,7 +13,9 @@ interface parametersType {
   isRunTimer: boolean;
 }
 
-export function defineProcess(parameters: parametersType): Command | void {
+export async function defineProcess(
+  parameters: parametersType
+): Promise<Command | void> {
   const {
     originalCommand,
     reset,
@@ -40,6 +43,7 @@ export function defineProcess(parameters: parametersType): Command | void {
   const addJourneyDurationRegax = /^insert journey duration:\s*(.+)$/;
   const insertTimeForPerionRegax =
     /^insert time for period where id =\s*(.+?)\s* set hrs =\s*(.+)$/;
+  const insertMainNode = /^insert node:\s*(.+)$/;
 
   switch (terminalPlace.split("/")[1]) {
     case "basic":
@@ -47,12 +51,16 @@ export function defineProcess(parameters: parametersType): Command | void {
         const matched = command.match(insertDailyRegax);
         if (matched) {
           const [, title, desc] = matched;
-          CmdsMethods.addTask({ title, desc });
-          const res = CmdsMethods.responseTextOutput(
-            originalCommand,
-            "success",
-            "Success: Task was added"
-          );
+          const res = await CmdsMethods.addTask({ title, desc });
+
+          if (res) {
+            return CmdsMethods.responseTextOutput(
+              originalCommand,
+              "success",
+              "Success: Task was added"
+            );
+          }
+          return CmdsMethods.responseTextOutput(originalCommand, "error");
         }
       } else if (
         command === "help" ||
@@ -73,135 +81,168 @@ export function defineProcess(parameters: parametersType): Command | void {
         const matched = command.match(addJourneyDurationRegax);
         if (matched) {
           const [, period] = matched;
-          CmdsMethods.addPeriod(period);
-          const res = CmdsMethods.responseTextOutput(
-            originalCommand,
-            "success",
-            "Success: Period was added"
-          );
-          return res;
+          const res = await CmdsMethods.addPeriod(period);
+          if (res)
+            return CmdsMethods.responseTextOutput(
+              originalCommand,
+              "success",
+              "Success: Period was added"
+            );
+
+          return CmdsMethods.responseTextOutput(originalCommand, "error");
         }
       } else if (insertTimeForPerionRegax.test(command)) {
         const matched = command.match(insertTimeForPerionRegax);
         if (matched) {
           const [, timeStatsID, hrs] = matched;
-          CmdsMethods.addHrsForPeriod({ sumTimeHrs: Number(hrs), timeStatsID });
-          const res = CmdsMethods.responseTextOutput(
-            originalCommand,
-            "success",
-            `Success: Period time was added`
-          );
-          return res;
+          const res = await CmdsMethods.addHrsForPeriod({
+            sumTimeHrs: Number(hrs),
+            timeStatsID,
+          });
+          if (res)
+            return CmdsMethods.responseTextOutput(
+              originalCommand,
+              "success",
+              "Success: Period was added"
+            );
+
+          return CmdsMethods.responseTextOutput(originalCommand, "error");
         }
       } else if (editTaskRegex.test(command)) {
         const matched = command.match(editTaskRegex);
         if (matched) {
           const [, taskId, title, desc] = matched;
-          CmdsMethods.editTask({ taskId, title, desc });
-          const res = CmdsMethods.responseTextOutput(
-            originalCommand,
-            "success",
-            "Success: Update process is complete!"
-          );
-          return res;
+          const res = await CmdsMethods.editTask({ taskId, title, desc });
+          if (res)
+            return CmdsMethods.responseTextOutput(
+              originalCommand,
+              "success",
+              "Success: Period was added"
+            );
+
+          return CmdsMethods.responseTextOutput(originalCommand, "error");
         }
       } else if (doneTaskRegax.test(command)) {
         const matched = command.match(doneTaskRegax);
         if (matched) {
           const [, taskId, done, spendMs] = matched;
-          CmdsMethods.doneTask({
+          const res = await CmdsMethods.doneTask({
             taskId,
             done: Boolean(done),
             spendMs: Number(spendMs),
           });
-          const res = CmdsMethods.responseTextOutput(
-            originalCommand,
-            "success",
-            "Success: Task was declared as a done!"
-          );
-          return res;
+          if (res)
+            return CmdsMethods.responseTextOutput(
+              originalCommand,
+              "success",
+              "Success: Period was added"
+            );
+
+          return CmdsMethods.responseTextOutput(originalCommand, "error");
         }
       } else if (retrieveTaskRegax.test(command)) {
         const matched = command.match(retrieveTaskRegax);
         if (matched) {
           const [, taskId] = matched;
-          CmdsMethods.getTaskByIdFromDailyTask({
+          const res = await CmdsMethods.getTaskByIdFromDailyTask({
             taskId,
           });
-          const res = CmdsMethods.responseTextOutput(
-            originalCommand,
-            "success",
-            "Success: Task retrieve process done!"
-          );
-          return res;
+          if (res)
+            return CmdsMethods.responseTextOutput(
+              originalCommand,
+              "success",
+              "Success: Period was added"
+            );
+
+          return CmdsMethods.responseTextOutput(originalCommand, "error");
         }
       } else if (command === "select * from dailyTask") {
-        CmdsMethods.getTasksfromDailyTask();
-        const res = CmdsMethods.responseTextOutput(
-          originalCommand,
-          "success",
-          "Success: Task retrieve process done!"
-        );
-        return res;
+        const res = await CmdsMethods.getTasksfromDailyTask();
+        if (res)
+          return CmdsMethods.responseTextOutput(
+            originalCommand,
+            "success",
+            "Success: Period was added"
+          );
+
+        return CmdsMethods.responseTextOutput(originalCommand, "error");
       } else if (removeTaskRegax.test(command)) {
         const matched = command.match(removeTaskRegax);
         if (matched) {
           const [, taskId] = matched;
-          CmdsMethods.removeTask(taskId);
-          const res = CmdsMethods.responseTextOutput(
-            originalCommand,
-            "success",
-            "Success: Task was removed!"
-          );
-          return res;
+          const res = await CmdsMethods.removeTask(taskId);
+          if (res)
+            return CmdsMethods.responseTextOutput(
+              originalCommand,
+              "success",
+              "Success: Period was added"
+            );
+
+          return CmdsMethods.responseTextOutput(originalCommand, "error");
         }
       } else if (insertNoteRegax.test(command)) {
         const matched = command.match(insertNoteRegax);
         if (matched) {
           const [, title, desc, deadline] = matched;
-          CmdsMethods.addNote({ title, desc, deadline });
-          const res = CmdsMethods.responseTextOutput(
-            originalCommand,
-            "success",
-            "Success: Note was added!"
-          );
-          return res;
+          const res = await CmdsMethods.addNote({ title, desc, deadline });
+          if (res)
+            return CmdsMethods.responseTextOutput(
+              originalCommand,
+              "success",
+              "Success: Note was added!"
+            );
+
+          return CmdsMethods.responseTextOutput(originalCommand, "error");
         }
       } else if (editNoteRegax.test(command)) {
         const matched = command.match(editNoteRegax);
         if (matched) {
           const [, noteId, title, desc, deadline] = matched;
-          CmdsMethods.editNote({ noteId, title, desc, deadline });
-          const res = CmdsMethods.responseTextOutput(
-            originalCommand,
-            "success",
-            "Success: Note was updated!"
-          );
-          return res;
+          const res = await CmdsMethods.editNote({
+            noteId,
+            title,
+            desc,
+            deadline,
+          });
+          if (res)
+            return CmdsMethods.responseTextOutput(
+              originalCommand,
+              "success",
+              "Success: Period was added"
+            );
+
+          return CmdsMethods.responseTextOutput(originalCommand, "error");
         }
       } else if (doneNoteRegax.test(command)) {
         const matched = command.match(doneNoteRegax);
         if (matched) {
           const [, noteId, complete] = matched;
-          CmdsMethods.doneNote({ noteId, complete: Boolean(complete) });
-          const res = CmdsMethods.responseTextOutput(
-            originalCommand,
-            "success",
-            "Success: Note was declared as a complete!"
-          );
-          return res;
+          const res = await CmdsMethods.doneNote({
+            noteId,
+            complete: Boolean(complete),
+          });
+          if (res)
+            return CmdsMethods.responseTextOutput(
+              originalCommand,
+              "success",
+              "Success: Period was added"
+            );
+
+          return CmdsMethods.responseTextOutput(originalCommand, "error");
         }
       } else if (removeNoteRegax.test(command)) {
         const matched = command.match(removeNoteRegax);
         if (matched) {
           const [, noteId] = matched;
-          CmdsMethods.removeNote(noteId);
-          const res = CmdsMethods.responseTextOutput(
-            originalCommand,
-            "success",
-            "Success: Note was removed!"
-          );
-          return res;
+          const res = await CmdsMethods.removeNote(noteId);
+          if (res)
+            return CmdsMethods.responseTextOutput(
+              originalCommand,
+              "success",
+              "Success: Period was added"
+            );
+
+          return CmdsMethods.responseTextOutput(originalCommand, "error");
         }
       } else if (command === "/c timer" || command === "/c tree") {
         const area = command.split("/c")[1];
@@ -251,6 +292,38 @@ export function defineProcess(parameters: parametersType): Command | void {
         );
         return res;
       }
-    case "/tree":
+    case "tree":
+      if (insertMainNode.test(command)) {
+        const matched = command.match(insertMainNode);
+        if (matched) {
+          const [, mainNode] = matched;
+          const res = await CmdsMethods.insertMainNode(mainNode);
+
+          if (!res)
+            return CmdsMethods.responseTextOutput(originalCommand, "error");
+
+          return {
+            type: "component",
+            command: originalCommand,
+            componentOutput: TreeMap,
+            props: { mainNode },
+          };
+        }
+      } else if (
+        command === "help" ||
+        command === "clear" ||
+        command === "clear except timer command" ||
+        command === "/c timer" ||
+        command === "/c basic" ||
+        command === "/c tree"
+      ) {
+        return mainTerminalCmd({
+          setTerminalPlace,
+          reset,
+          originalCommand,
+          isRunTime: isRunTimer,
+          resetExceptTimerCmds,
+        });
+      }
   }
 }

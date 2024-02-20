@@ -10,7 +10,7 @@ export const makeRequest = async (
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {
-      throw new Error("Error:" + error.message);
+      throw new Error(error.message);
     }
     console.log(error);
   }

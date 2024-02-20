@@ -17,7 +17,7 @@ const Terminal: FC<{
       }
     }
   }, [commands, inputRef]);
-  console.log(commands);
+  
   return (
     <div className="cli-output">
       {commands.map((cmd, index) => (

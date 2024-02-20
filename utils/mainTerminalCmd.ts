@@ -43,7 +43,6 @@ const mainTerminalCmd = ({
         return reset();
       }
     case "clear except timer command":
-      console.log("am i here?");
       resetExceptTimerCmds();
       break;
     case "/c timer":
@@ -65,3 +64,4 @@ const mainTerminalCmd = ({
 };
 
 export default mainTerminalCmd;
+

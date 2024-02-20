@@ -1,7 +1,8 @@
 import { existingCmds } from "@/tempCont/index";
 import { makeRequest } from "./makeRequest";
 import { Command, TextCommand } from "@/app/page";
-import Context from "./Context";
+import fs from "fs";
+import { MapTreeType } from "@/types/type";
 
 class CmdsMethods {
   static help() {
@@ -257,18 +258,42 @@ class CmdsMethods {
     }
   }
 
-  static isRuntimer = (
+  static isRuntimer(
     cmdTitle: string,
     commands: Command[],
     area: string
-  ): boolean => {
+  ): boolean {
     const findIndex = commands.findIndex((cmd) => {
-      const validAred = cmd.command.split("/>")[0].split("/")[2] === area;
-      const command = cmd.command.split("/>")[1]?.trim() ?? "";
-      return validAred && command.startsWith(cmdTitle)
+      const validAred = cmd.command?.split("/>")[0].split("/")[2] === area;
+      const command = cmd.command?.split("/>")[1]?.trim() ?? "";
+      return validAred && command.startsWith(cmdTitle);
     });
     return findIndex !== -1;
-  };
+  }
+
+  static capitalized(str: string) {
+    const firstChar = str.charAt(0);
+    return firstChar + str.slice(1);
+  }
+
+  static async insertMainNode(mainNode: string) {
+    const mainGoal = this.capitalized(mainNode);
+
+    const mapTree: MapTreeType = {
+      user: "1531",
+      userTree: {
+        name: mainGoal,
+        children: [],
+      },
+    };
+
+    const res = await makeRequest("/api/map-tree", "POST", { mapTree });
+
+    console.log(res, "in methods");
+    if (!res) return false;
+
+    return res;
+  }
 }
 
 export default CmdsMethods;

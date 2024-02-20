@@ -35,11 +35,11 @@ export default function Home() {
     }
   }, [commands]);
 
-  const handleCommand = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleCommand = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && input) {
       const newCommand = `Beta version/ricco${terminalPlace}/> ${input.trim()}`;
 
-      const output = processCommand(newCommand);
+      const output = await processCommand(newCommand);
 
       if (output) {
         setCommands([...commands, output]);
@@ -83,8 +83,8 @@ export default function Home() {
     );
   }, [commands]);
 
-  const processCommand = (command: string): Command | void => {
-    const outPut = defineProcess({
+  const processCommand = async (command: string): Promise<Command | void> => {
+    const outPut = await defineProcess({
       originalCommand: command,
       reset,
       resetExceptTimerCmds,
