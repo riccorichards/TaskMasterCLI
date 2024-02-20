@@ -4,9 +4,10 @@ import Input from "@/components/Input";
 import MemoizedTerminal from "@/components/Terminal";
 import Context from "@/utils/Context";
 import { defineProcess } from "@/utils/defineProcess";
+import CmdsMethods from "@/utils/methods";
 import { useState, useEffect, useRef } from "react";
 
-type TextCommand = {
+export type TextCommand = {
   type: "text";
   command: string;
   textOutput: string;
@@ -22,10 +23,11 @@ type ComponentCommand = {
 export type Command = TextCommand | ComponentCommand;
 
 export default function Home() {
-  const [terminalPlace, setTerminalPlace] = useState<string>("/general");
+  const [terminalPlace, setTerminalPlace] = useState<string>("/basic");
   const [input, setInput] = useState<string>("");
   const [commands, setCommands] = useState<Command[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const isExistRunTimeCmd = useRef<boolean>(false);
 
   useEffect(() => {
     if (inputRef.current) {
@@ -35,7 +37,7 @@ export default function Home() {
 
   const handleCommand = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && input) {
-      const newCommand = input.trim();
+      const newCommand = `Beta version/ricco${terminalPlace}/> ${input.trim()}`;
 
       const output = processCommand(newCommand);
 
@@ -70,24 +72,34 @@ export default function Home() {
       const cmdWords = cmd.command.split(" ");
       return cmdWords.includes(cmdTimer) && cmd.type === "component";
     });
-
     setCommands(filteredCmds);
   };
 
+  useEffect(() => {
+    isExistRunTimeCmd.current = CmdsMethods.isRuntimer(
+      "run timer for",
+      commands,
+      "timer"
+    );
+  }, [commands]);
+
   const processCommand = (command: string): Command | void => {
     const outPut = defineProcess({
-      command,
+      originalCommand: command,
       reset,
       resetExceptTimerCmds,
       setTerminalPlace,
       terminalPlace,
+      isRunTimer: isExistRunTimeCmd.current,
     });
     return outPut;
   };
 
   const removeCommand = (commandToRemove: string): void => {
     setCommands((currentCommands) =>
-      currentCommands.filter((cmd) => cmd.command !== commandToRemove)
+      currentCommands.filter(
+        (cmd) => cmd.command.split("/>")[1].trim() !== commandToRemove
+      )
     );
   };
 
@@ -102,7 +114,7 @@ export default function Home() {
         <span className="flex gap-2 items-center">
           <span className="whitespace-nowrap">
             {`Beta version/ricco${terminalPlace}`}/&gt;
-          </span>
+          </span>{" "}
           <Input
             inputRef={inputRef}
             input={input}

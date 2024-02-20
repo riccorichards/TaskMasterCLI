@@ -5,7 +5,7 @@ const Terminal: FC<{
   commands: Command[];
   inputRef: React.RefObject<HTMLInputElement>;
   terminalPlace: string;
-}> = ({ commands, terminalPlace, inputRef }) => {
+}> = ({ commands, inputRef }) => {
   useEffect(() => {
     const inputElement = inputRef.current;
     if (inputElement) {
@@ -17,17 +17,12 @@ const Terminal: FC<{
       }
     }
   }, [commands, inputRef]);
-
+  console.log(commands);
   return (
     <div className="cli-output">
       {commands.map((cmd, index) => (
         <div key={index}>
-          <div>
-            <span className="whitespace-nowrap">
-              {`Beta version/ricco${terminalPlace}`}/&gt;
-            </span>{" "}
-            {cmd.command}
-          </div>
+          <div>{cmd.command}</div>
           <div>
             {cmd.type === "text" ? (
               cmd.textOutput

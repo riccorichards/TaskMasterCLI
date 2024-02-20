@@ -4,22 +4,24 @@ import mainTerminalCmd from "./mainTerminalCmd";
 import MemoizeTimer from "@/components/Timer";
 
 interface parametersType {
-  command: string;
+  originalCommand: string;
   reset: () => void;
   resetExceptTimerCmds: () => void;
   setTerminalPlace: (v: string) => void;
   terminalPlace: string;
+  isRunTimer: boolean;
 }
 
 export function defineProcess(parameters: parametersType): Command | void {
   const {
-    command,
+    originalCommand,
     reset,
+    isRunTimer,
     resetExceptTimerCmds,
     setTerminalPlace,
     terminalPlace,
   } = parameters;
-
+  const command = originalCommand.split("/>")[1].trim();
   //regax for dynamic variables inside commands
   const insertDailyRegax = /^insert dailyTask\s+(.+),\s*(.+)$/;
   const editTaskRegex =
@@ -39,37 +41,32 @@ export function defineProcess(parameters: parametersType): Command | void {
   const insertTimeForPerionRegax =
     /^insert time for period where id =\s*(.+?)\s* set hrs =\s*(.+)$/;
 
-  switch (terminalPlace) {
-    case "/general":
+  switch (terminalPlace.split("/")[1]) {
+    case "basic":
       if (insertDailyRegax.test(command)) {
         const matched = command.match(insertDailyRegax);
         if (matched) {
           const [, title, desc] = matched;
           CmdsMethods.addTask({ title, desc });
-          return {
-            type: "text",
-            command,
-            textOutput: `Success: Task was added`,
-          };
-        } else {
-          return {
-            type: "text",
-            command,
-            textOutput: `Error: Invalid command line ${command}`,
-          };
+          const res = CmdsMethods.responseTextOutput(
+            originalCommand,
+            "success",
+            "Success: Task was added"
+          );
         }
       } else if (
         command === "help" ||
         command === "clear" ||
-        command === "clear except timer commands" ||
+        command === "clear except timer command" ||
         command === "/c timer" ||
-        command === "/c general" ||
+        command === "/c basic" ||
         command === "/c tree"
       ) {
         return mainTerminalCmd({
           setTerminalPlace,
           reset,
-          command,
+          originalCommand,
+          isRunTime: isRunTimer,
           resetExceptTimerCmds,
         });
       } else if (addJourneyDurationRegax.test(command)) {
@@ -77,51 +74,36 @@ export function defineProcess(parameters: parametersType): Command | void {
         if (matched) {
           const [, period] = matched;
           CmdsMethods.addPeriod(period);
-          return {
-            type: "text",
-            command,
-            textOutput: `Success: Period was added`,
-          };
-        } else {
-          return {
-            type: "text",
-            command,
-            textOutput: `Error: Invalid command line ${command}`,
-          };
+          const res = CmdsMethods.responseTextOutput(
+            originalCommand,
+            "success",
+            "Success: Period was added"
+          );
+          return res;
         }
       } else if (insertTimeForPerionRegax.test(command)) {
         const matched = command.match(insertTimeForPerionRegax);
         if (matched) {
           const [, timeStatsID, hrs] = matched;
           CmdsMethods.addHrsForPeriod({ sumTimeHrs: Number(hrs), timeStatsID });
-          return {
-            type: "text",
-            command,
-            textOutput: `Success: Period time was added`,
-          };
-        } else {
-          return {
-            type: "text",
-            command,
-            textOutput: `Error: Invalid command line ${command}`,
-          };
+          const res = CmdsMethods.responseTextOutput(
+            originalCommand,
+            "success",
+            `Success: Period time was added`
+          );
+          return res;
         }
       } else if (editTaskRegex.test(command)) {
         const matched = command.match(editTaskRegex);
         if (matched) {
           const [, taskId, title, desc] = matched;
           CmdsMethods.editTask({ taskId, title, desc });
-          return {
-            type: "text",
-            command,
-            textOutput: "Success: Update process is complete!",
-          };
-        } else {
-          return {
-            type: "text",
-            command,
-            textOutput: `Error: Invalid command line ${command}`,
-          };
+          const res = CmdsMethods.responseTextOutput(
+            originalCommand,
+            "success",
+            "Success: Update process is complete!"
+          );
+          return res;
         }
       } else if (doneTaskRegax.test(command)) {
         const matched = command.match(doneTaskRegax);
@@ -132,17 +114,12 @@ export function defineProcess(parameters: parametersType): Command | void {
             done: Boolean(done),
             spendMs: Number(spendMs),
           });
-          return {
-            type: "text",
-            command,
-            textOutput: "Success: Task was declared as a done!",
-          };
-        } else {
-          return {
-            type: "text",
-            command,
-            textOutput: `Error: Invalid command line ${command}`,
-          };
+          const res = CmdsMethods.responseTextOutput(
+            originalCommand,
+            "success",
+            "Success: Task was declared as a done!"
+          );
+          return res;
         }
       } else if (retrieveTaskRegax.test(command)) {
         const matched = command.match(retrieveTaskRegax);
@@ -151,134 +128,102 @@ export function defineProcess(parameters: parametersType): Command | void {
           CmdsMethods.getTaskByIdFromDailyTask({
             taskId,
           });
-          return {
-            type: "text",
-            command,
-            textOutput: "Success: Task retrieve process done!",
-          };
-        } else {
-          return {
-            type: "text",
-            command,
-            textOutput: `Error: Invalid command line ==> ${command}`,
-          };
+          const res = CmdsMethods.responseTextOutput(
+            originalCommand,
+            "success",
+            "Success: Task retrieve process done!"
+          );
+          return res;
         }
       } else if (command === "select * from dailyTask") {
         CmdsMethods.getTasksfromDailyTask();
-        return {
-          type: "text",
-          command,
-          textOutput: "Success: Task retrieve process done!",
-        };
+        const res = CmdsMethods.responseTextOutput(
+          originalCommand,
+          "success",
+          "Success: Task retrieve process done!"
+        );
+        return res;
       } else if (removeTaskRegax.test(command)) {
         const matched = command.match(removeTaskRegax);
         if (matched) {
           const [, taskId] = matched;
           CmdsMethods.removeTask(taskId);
-          return {
-            type: "text",
-            command,
-            textOutput: "Success: Task was removed!",
-          };
-        } else {
-          return {
-            type: "text",
-            command,
-            textOutput: `Error: Invalid command line ==> ${command}`,
-          };
+          const res = CmdsMethods.responseTextOutput(
+            originalCommand,
+            "success",
+            "Success: Task was removed!"
+          );
+          return res;
         }
       } else if (insertNoteRegax.test(command)) {
         const matched = command.match(insertNoteRegax);
         if (matched) {
           const [, title, desc, deadline] = matched;
           CmdsMethods.addNote({ title, desc, deadline });
-          return {
-            type: "text",
-            command,
-            textOutput: "Success: Note was added!",
-          };
-        } else {
-          return {
-            type: "text",
-            command,
-            textOutput: `Error: Invalid command line ==> ${command}`,
-          };
+          const res = CmdsMethods.responseTextOutput(
+            originalCommand,
+            "success",
+            "Success: Note was added!"
+          );
+          return res;
         }
       } else if (editNoteRegax.test(command)) {
         const matched = command.match(editNoteRegax);
         if (matched) {
           const [, noteId, title, desc, deadline] = matched;
           CmdsMethods.editNote({ noteId, title, desc, deadline });
-          return {
-            type: "text",
-            command,
-            textOutput: "Success: Note was updated!",
-          };
-        } else {
-          return {
-            type: "text",
-            command,
-            textOutput: `Error: Invalid command line ==> ${command}`,
-          };
+          const res = CmdsMethods.responseTextOutput(
+            originalCommand,
+            "success",
+            "Success: Note was updated!"
+          );
+          return res;
         }
       } else if (doneNoteRegax.test(command)) {
         const matched = command.match(doneNoteRegax);
         if (matched) {
           const [, noteId, complete] = matched;
           CmdsMethods.doneNote({ noteId, complete: Boolean(complete) });
-          return {
-            type: "text",
-            command,
-            textOutput: "Success: Note was declared as a complete!",
-          };
-        } else {
-          return {
-            type: "text",
-            command,
-            textOutput: `Error: Invalid command line ==> ${command}`,
-          };
+          const res = CmdsMethods.responseTextOutput(
+            originalCommand,
+            "success",
+            "Success: Note was declared as a complete!"
+          );
+          return res;
         }
       } else if (removeNoteRegax.test(command)) {
         const matched = command.match(removeNoteRegax);
         if (matched) {
           const [, noteId] = matched;
           CmdsMethods.removeNote(noteId);
-          return {
-            type: "text",
-            command,
-            textOutput: "Success: Note was removed!",
-          };
-        } else {
-          return {
-            type: "text",
-            command,
-            textOutput: `Error: Invalid command line ==> ${command}`,
-          };
+          const res = CmdsMethods.responseTextOutput(
+            originalCommand,
+            "success",
+            "Success: Note was removed!"
+          );
+          return res;
         }
       } else if (command === "/c timer" || command === "/c tree") {
         const area = command.split("/c")[1];
-        return {
-          type: "text",
-          command,
-          textOutput: `Transfer: To >>>${area}`,
-        };
+        const res = CmdsMethods.responseTextOutput(
+          originalCommand,
+          "success",
+          `Transfer: To >>>${area}`
+        );
+        return res;
       } else {
-        return {
-          type: "text",
-          command,
-          textOutput: "Error: Unknown command",
-        };
+        const res = CmdsMethods.responseTextOutput(originalCommand, "error");
+        return res;
       }
-    case "/timer":
+    case "timer":
       const runTimerRegax = /^run timer for\s*(.+)$/;
-
       if (runTimerRegax.test(command)) {
         const matched = command.match(runTimerRegax);
         if (matched) {
           const [, title] = matched;
           return {
             type: "component",
-            command,
+            command: originalCommand,
             componentOutput: MemoizeTimer,
             props: { title: title },
           };
@@ -286,23 +231,25 @@ export function defineProcess(parameters: parametersType): Command | void {
       } else if (
         command === "help" ||
         command === "clear" ||
-        command === "clear except timer commands" ||
+        command === "clear except timer command" ||
         command === "/c timer" ||
-        command === "/c general" ||
+        command === "/c basic" ||
         command === "/c tree"
       ) {
         return mainTerminalCmd({
           setTerminalPlace,
           reset,
-          command,
+          originalCommand,
+          isRunTime: isRunTimer,
           resetExceptTimerCmds,
         });
       } else {
-        return {
-          type: "text",
-          command,
-          textOutput: "Error: Unknown command",
-        };
+        const res = CmdsMethods.responseTextOutput(
+          originalCommand,
+          "error",
+          `Error: Unknown command: ${command}!`
+        );
+        return res;
       }
     case "/tree":
   }

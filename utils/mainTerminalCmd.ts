@@ -1,36 +1,56 @@
 import { Command } from "@/app/page";
 import Help from "@/components/Help";
+import CmdsMethods from "./methods";
 
 interface TerminalOpType {
-  command: string;
+  originalCommand: string;
   reset: () => void;
-  resetExceptTimerCmds: () => void;
   setTerminalPlace: (v: string) => void;
+  isRunTime: boolean;
+  resetExceptTimerCmds: () => void;
 }
+
 const mainTerminalCmd = ({
-  command,
+  originalCommand,
   reset,
-  resetExceptTimerCmds,
   setTerminalPlace,
+  isRunTime,
+  resetExceptTimerCmds,
 }: TerminalOpType): Command | void => {
+  const command = originalCommand.split("/>")[1].trim();
   switch (command) {
     case "help":
       return {
         type: "component",
-        command,
+        command: originalCommand,
         componentOutput: Help,
         props: "",
       };
     case "clear":
-      reset();
-    case "clear except timer commands":
+      if (isRunTime) {
+        const confirmReset = window.confirm(
+          "Are you sure to clear the entire terminal? If so, the running timer would be cleared too!"
+        );
+        if (confirmReset) {
+          return reset();
+        }
+        return CmdsMethods.responseTextOutput(
+          originalCommand,
+          "success",
+          "Canceled clear command to avoid resetting the timer."
+        );
+      } else {
+        return reset();
+      }
+    case "clear except timer command":
+      console.log("am i here?");
       resetExceptTimerCmds();
       break;
     case "/c timer":
       setTerminalPlace("/timer");
       break;
-    case "/c general":
-      setTerminalPlace("/general");
+    case "/c basic":
+      setTerminalPlace("/basic");
       break;
     case "/c tree":
       setTerminalPlace("/tree");
@@ -38,7 +58,7 @@ const mainTerminalCmd = ({
     default:
       return {
         type: "text",
-        command,
+        command: originalCommand,
         textOutput: "Error: Unknown command",
       };
   }

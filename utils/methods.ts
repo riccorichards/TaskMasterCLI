@@ -1,6 +1,7 @@
 import { existingCmds } from "@/tempCont/index";
 import { makeRequest } from "./makeRequest";
-import { Command } from "@/app/page";
+import { Command, TextCommand } from "@/app/page";
+import Context from "./Context";
 
 class CmdsMethods {
   static help() {
@@ -236,19 +237,38 @@ class CmdsMethods {
     }
   }
 
-  static responseTextOutput(command: string, type: string, output: string) {
-    return type === "error"
-      ? {
-          type: "text",
-          command,
-          textOutput: "Error: Unknown command",
-        }
-      : {
-          type: "text",
-          command,
-          textOutput: `Success: ${output}`,
-        };
+  static responseTextOutput(
+    command: string,
+    type: "error" | "success",
+    output?: string
+  ): TextCommand {
+    if (type === "error") {
+      return {
+        type: "text",
+        command,
+        textOutput: `Error: Unknown command: ${command.split("/>")[1]}`,
+      };
+    } else {
+      return {
+        type: "text",
+        command,
+        textOutput: `Success: ${output}`,
+      };
+    }
   }
+
+  static isRuntimer = (
+    cmdTitle: string,
+    commands: Command[],
+    area: string
+  ): boolean => {
+    const findIndex = commands.findIndex((cmd) => {
+      const validAred = cmd.command.split("/>")[0].split("/")[2] === area;
+      const command = cmd.command.split("/>")[1]?.trim() ?? "";
+      return validAred && command.startsWith(cmdTitle)
+    });
+    return findIndex !== -1;
+  };
 }
 
 export default CmdsMethods;
