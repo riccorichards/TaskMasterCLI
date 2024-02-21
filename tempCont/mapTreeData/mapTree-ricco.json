@@ -5,7 +5,16 @@
     "children": [
       {
         "name": "Blockchain",
-        "children": []
+        "children": [
+          {
+            "name": "Smart contracts",
+            "children": []
+          },
+          {
+            "name": "another Contracts",
+            "children": []
+          }
+        ]
       },
       {
         "name": "Python",

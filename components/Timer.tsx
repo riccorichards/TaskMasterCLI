@@ -1,3 +1,4 @@
+import { useTimerStore } from "@/store/TimerStore";
 import Context from "@/utils/Context";
 import CmdsMethods from "@/utils/methods";
 import React, { FC, useContext, useEffect, useRef, useState } from "react";
@@ -11,15 +12,17 @@ const Timer: FC<{ title: string }> = ({ title }) => {
   //storing the total timer of pause
   const totalPausedTimeRef = useRef<number>(0);
   const pauseStartTimeRef = useRef<number>(0);
-
+  const { getTimerInfo } = useTimerStore();
   const getContext = useContext(Context);
+  const elapsedRef = useRef<number>(0);
 
   useEffect(() => {
     const animate = () => {
       if (!isPaused) {
         const now = Date.now();
-        const elapsed = now - startTimeRef.current - totalPausedTimeRef.current;
-        const secondsElapsed = Math.floor(elapsed / 1000);
+        elapsedRef.current =
+          now - startTimeRef.current - totalPausedTimeRef.current;
+        const secondsElapsed = Math.floor(elapsedRef.current / 1000);
         setDisplayTime(CmdsMethods.formatDuration(secondsElapsed));
         frameRef.current = requestAnimationFrame(animate);
       }
@@ -53,15 +56,34 @@ const Timer: FC<{ title: string }> = ({ title }) => {
   };
 
   const handleReset = () => {
-    setDisplayTime("00:00:00");
-    setIsPaused(true); // Stop the timer
-    startTimeRef.current = Date.now(); // Reset start time
-    totalPausedTimeRef.current = 0; // Reset total paused time
-    pauseStartTimeRef.current = 0; // Reset pause start time
+    const confirmReset = window.confirm("Are you sure to reset timer?");
+    if (confirmReset) {
+      setDisplayTime("00:00:00");
+      setIsPaused(true); // Stop the timer
+      startTimeRef.current = Date.now(); // Reset start time
+      totalPausedTimeRef.current = 0; // Reset total paused time
+      pauseStartTimeRef.current = 0; // Reset pause start time
 
-    setTimeout(() => {
-      getContext?.removeCommand(`run timer for ${title}`);
-    }, 1000);
+      setTimeout(() => {
+        getContext?.removeCommand(`run timer for ${title}`);
+      }, 1000);
+    }
+  };
+
+  const saveTime = () => {
+    const confirmToSave = window.confirm("Are you sure to save timer?");
+    if (confirmToSave) {
+      getTimerInfo(elapsedRef.current, title);
+      setDisplayTime("00:00:00");
+      setIsPaused(true);
+      startTimeRef.current = Date.now();
+      totalPausedTimeRef.current = 0;
+      pauseStartTimeRef.current = 0;
+
+      setTimeout(() => {
+        getContext?.removeCommand(`run timer for ${title}`);
+      }, 1000);
+    }
   };
 
   return (
@@ -74,7 +96,7 @@ const Timer: FC<{ title: string }> = ({ title }) => {
           <button onClick={handlePause}>Pause</button>
         )}
         <button onClick={handleReset}>Reset</button>
-        <button>Save</button>
+        <button onClick={saveTime}>Save</button>
       </div>
       <span className="text-2xl">{displayTime}</span>
     </div>

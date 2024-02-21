@@ -1,7 +1,9 @@
 "use client";
 
 import Input from "@/components/Input";
+import SubmitDoneTask from "@/components/SubmitDoneTask";
 import MemoizedTerminal from "@/components/Terminal";
+import { useTimerStore } from "@/store/TimerStore";
 import Context from "@/utils/Context";
 import { defineProcess } from "@/utils/defineProcess";
 import CmdsMethods from "@/utils/methods";
@@ -28,6 +30,7 @@ export default function Home() {
   const [commands, setCommands] = useState<Command[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const isExistRunTimeCmd = useRef<boolean>(false);
+  const { ms, taskTitle } = useTimerStore();
 
   useEffect(() => {
     if (inputRef.current) {
@@ -48,6 +51,18 @@ export default function Home() {
       setInput("");
     }
   };
+
+  useEffect(() => {
+    if (ms && taskTitle) {
+      const newCommandRespose = {
+        type: "component",
+        command: `Beta version/ricco${terminalPlace}/> completion process...`,
+        componentOutput: SubmitDoneTask,
+        props: { ms, taskTitle },
+      };
+      setCommands((prev) => [...prev, newCommandRespose as Command]);
+    }
+  }, [ms, taskTitle, terminalPlace]);
 
   useEffect(() => {
     const handleKeyboard = (e: React.KeyboardEvent<HTMLInputElement>) => {

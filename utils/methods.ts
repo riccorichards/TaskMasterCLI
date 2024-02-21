@@ -105,26 +105,6 @@ class CmdsMethods {
     }
   }
 
-  static async getTaskByIdFromDailyTask({ taskId }: { taskId: string }) {
-    try {
-      const res = await makeRequest(`/api/task/${taskId}`, "GET");
-      if (!res) throw new Error("Error while fetching task");
-      return `Successfully fetched: ${JSON.stringify(res)}`;
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  static async getTasksfromDailyTask() {
-    try {
-      const res = await makeRequest(`/api/task`, "GET");
-      if (!res) throw new Error("Error while fetching task");
-      return `Successfully fetched: ${JSON.stringify(res)}`;
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
   static async removeTask(taskId: string) {
     try {
       await makeRequest(`/api/task/${taskId}`, "DELETE");
@@ -368,6 +348,14 @@ class CmdsMethods {
       throw new Error(
         `File was not found with provided: ${fileName} or server issue`
       );
+    }
+  }
+
+  static formatingDate(createAt: string) {
+    const date = createAt.split("T")[0]
+    return {
+      date,
+      time: createAt.split("T")[1].split(".")
     }
   }
 }

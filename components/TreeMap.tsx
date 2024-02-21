@@ -33,7 +33,7 @@ const TreeMap = () => {
         data: [mapTree.userTree],
         left: "2%",
         right: "2%",
-        top: "30.5%",
+        top: "40.5%",
         bottom: "10%",
         symbol: "emptyCircle",
         orient: "BT",

@@ -3,17 +3,21 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (
   req: NextRequest,
-  { params }: { params: { taskId: string } }
+  { params }: { params: { taskName: string } }
 ) => {
   try {
-    const { taskId } = params;
-    const task = await prisma.dailyTask.findUnique({ where: { id: taskId } });
+    const { taskName } = params;
+    const decodedTaskName = decodeURIComponent(taskName);
+
+    const task = await prisma.dailyTask.findUnique({
+      where: { title: decodedTaskName },
+    });
 
     if (!task) {
       return new NextResponse(
         JSON.stringify({
           error: "Task not found",
-          details: `A task with the ID ${taskId} does not exist.`,
+          details: `A task with the provided title: ${taskName} does not exist.`,
         }),
         { status: 404, headers: { "Content-Type": "application/json" } }
       );
@@ -26,7 +30,7 @@ export const GET = async (
   } catch (error) {
     return new NextResponse(
       JSON.stringify({
-        error: "Failed to create task",
+        error: "Failed to found task",
         details: error instanceof Error ? error.message : "Unknown error",
       }),
       { status: 500, headers: { "Content-Type": "application/json" } }
@@ -36,21 +40,30 @@ export const GET = async (
 
 export const PUT = async (
   req: NextRequest,
-  { params }: { params: { taskId: string } }
+  { params }: { params: { taskName: string } }
 ) => {
   try {
     const { title, desc, done, spendMs } = await req.json();
-    const { taskId } = params;
+    const { taskName } = params;
 
-    const updatedTask = await prisma.dailyTask.update({
-      where: { id: taskId },
-      data: {
-        title,
-        desc,
-        done,
-        spendMs,
-      },
-    });
+    let updatedTask;
+    if (title && desc) {
+      updatedTask = await prisma.dailyTask.update({
+        where: { title: taskName },
+        data: {
+          title,
+          desc,
+        },
+      });
+    } else {
+      updatedTask = await prisma.dailyTask.update({
+        where: { title: taskName },
+        data: {
+          done,
+          spendMs,
+        },
+      });
+    }
 
     if (!updatedTask)
       return new NextResponse(

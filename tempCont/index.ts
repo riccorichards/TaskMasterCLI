@@ -15,11 +15,6 @@ export const existingCmds = [
     desc: "Insert a new time entry for a specified period.",
   },
   {
-    id: 4,
-    cmd: "define complete time",
-    desc: "Define already complete time in percentage.",
-  },
-  {
     id: 5,
     cmd: "task stats",
     desc: "Define result in percentage between total amount tasks and complete taks.",
@@ -70,11 +65,6 @@ export const existingCmds = [
     desc: "Remove an existing task by its ID.",
   },
   {
-    id: 15,
-    cmd: "done task where id = [Task ID] set done = [Boolean], spendMs = [Milliseconds]",
-    desc: "Mark a task as completed by its title.",
-  },
-  {
     id: 16,
     cmd: "insert note title = [New Title], desc = [New Desc], deadline = [New Time]",
     desc: "Add a new note to the system.",
@@ -103,11 +93,6 @@ export const existingCmds = [
     id: 21,
     cmd: "day finish",
     desc: "Finished working process for day and storing tasks with their status.",
-  },
-  {
-    id: 22,
-    cmd: "select * from dailyTask where id = [Task ID]",
-    desc: "Retrieve an existing task by its ID.",
   },
   {
     id: 23,
@@ -143,5 +128,15 @@ export const existingCmds = [
     id: 29,
     cmd: "update node where nodeName = [Node Name] set [New Name]",
     desc: "Update the node with node's name.",
+  },
+  {
+    id: 30,
+    cmd: "close map tree",
+    desc: "Close opened map tree.",
+  },
+  {
+    id: 31,
+    cmd: "quit [Username]",
+    desc: "Quit from the our account.",
   },
 ];

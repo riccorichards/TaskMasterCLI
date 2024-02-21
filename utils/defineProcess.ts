@@ -3,6 +3,8 @@ import CmdsMethods from "./methods";
 import mainTerminalCmd from "./mainTerminalCmd";
 import MemoizeTimer from "@/components/Timer";
 import TreeMap from "@/components/TreeMap";
+import TasksList from "@/components/TasksList";
+import Task from "@/components/Task";
 
 interface parametersType {
   originalCommand: string;
@@ -25,13 +27,14 @@ export async function defineProcess(
     terminalPlace,
   } = parameters;
   const command = originalCommand.split("/>")[1].trim();
+
   //regax for dynamic variables inside commands
   const insertDailyRegax = /^insert dailyTask\s+(.+),\s*(.+)$/;
   const editTaskRegex =
     /^edit task where id =\s*(.+?)\s*set title =\s*(.+?),\s*desc =\s*(.+)$/;
   const doneTaskRegax =
     /^done task where id =\s*(.+?)\s*set done =\s*(true|false),\s*spendMs =\s*(.+)$/;
-  const retrieveTaskRegax = /^select * from dailyTask id =\s*(.+)\s*$/;
+  const retrieveTaskRegax = /^select \* from dailyTask where id =\s*(.+)$/;
   const removeTaskRegax = /^remove task where id =\s*(.+)$/;
   const insertNoteRegax =
     /^insert note title =\s*(.+?),\s*desc =\s*(.+?),\s*deadline =\s*(.+)$/;
@@ -151,24 +154,22 @@ export async function defineProcess(
             taskId,
           });
           if (res)
-            return CmdsMethods.responseTextOutput(
-              originalCommand,
-              "success",
-              "Success: Period was added"
-            );
+            return {
+              type: "component",
+              command: originalCommand,
+              componentOutput: Task,
+              props: { task: res },
+            };
 
           return CmdsMethods.responseTextOutput(originalCommand, "error");
         }
       } else if (command === "select * from dailyTask") {
-        const res = await CmdsMethods.getTasksfromDailyTask();
-        if (res)
-          return CmdsMethods.responseTextOutput(
-            originalCommand,
-            "success",
-            "Success: Period was added"
-          );
-
-        return CmdsMethods.responseTextOutput(originalCommand, "error");
+        return {
+          type: "component",
+          command: originalCommand,
+          componentOutput: TasksList,
+          props: "",
+        };
       } else if (removeTaskRegax.test(command)) {
         const matched = command.match(removeTaskRegax);
         if (matched) {
@@ -379,7 +380,12 @@ export async function defineProcess(
           const user = "ricco";
           const [, nodeName, updateNodeName] = matched;
           const method = command.split(" ")[0];
-          const res = await CmdsMethods.removeNode(user, nodeName, method, updateNodeName);
+          const res = await CmdsMethods.removeNode(
+            user,
+            nodeName,
+            method,
+            updateNodeName
+          );
 
           if (res)
             return {
@@ -391,6 +397,12 @@ export async function defineProcess(
 
           return CmdsMethods.responseTextOutput(originalCommand, "error");
         }
+      } else if (command === "close map tree") {
+        return CmdsMethods.responseTextOutput(
+          originalCommand,
+          "success",
+          "closed map free"
+        );
       } else {
         const res = CmdsMethods.responseTextOutput(originalCommand, "error");
         return res;
