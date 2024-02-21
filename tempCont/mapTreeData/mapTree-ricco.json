@@ -1,0 +1,16 @@
+{
+  "user": "ricco",
+  "userTree": {
+    "name": "Blockchain with Python",
+    "children": [
+      {
+        "name": "Blockchain",
+        "children": []
+      },
+      {
+        "name": "Python",
+        "children": []
+      }
+    ]
+  }
+}

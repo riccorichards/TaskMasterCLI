@@ -122,12 +122,26 @@ export const existingCmds = [
   {
     id: 25,
     cmd: "insert node: [Main Goal]",
-    desc: "creates main goal, start of the tree.",
+    desc: "Creates main goal, start of the tree.",
   },
   {
     id: 26,
-    cmd: "insert node: [Main Goal]",
-    desc: "creates main goal, start of the tree.",
+    cmd: "insert child where node = [Existing Node] add [Sub Node]",
+    desc: "Creates sub goals.",
+  },
+  {
+    id: 27,
+    cmd: "show map tree",
+    desc: "Discover the current map.",
+  },
+  {
+    id: 28,
+    cmd: "remove node where nodeName = [Node Name]",
+    desc: "Remove the node with node's name.",
+  },
+  {
+    id: 29,
+    cmd: "update node where nodeName = [Node Name] set [New Name]",
+    desc: "Update the node with node's name.",
   },
 ];
-

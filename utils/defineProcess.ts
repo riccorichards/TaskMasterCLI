@@ -44,6 +44,9 @@ export async function defineProcess(
   const insertTimeForPerionRegax =
     /^insert time for period where id =\s*(.+?)\s* set hrs =\s*(.+)$/;
   const insertMainNode = /^insert node:\s*(.+)$/;
+  const insertChild = /^insert child where node =\s*(.+?)\s*add\s*(.+)$/;
+  const removeNode = /^remove node where nodeName =\s*(.+)$/;
+  const updateNode = /^update node where nodeName =\s*(.+?)\s*set\s*(.+)$/;
 
   switch (terminalPlace.split("/")[1]) {
     case "basic":
@@ -306,7 +309,7 @@ export async function defineProcess(
             type: "component",
             command: originalCommand,
             componentOutput: TreeMap,
-            props: { mainNode },
+            props: "",
           };
         }
       } else if (
@@ -324,6 +327,73 @@ export async function defineProcess(
           isRunTime: isRunTimer,
           resetExceptTimerCmds,
         });
+      } else if (command === "show map tree") {
+        return {
+          type: "component",
+          command: originalCommand,
+          componentOutput: TreeMap,
+          props: "",
+        };
+      } else if (insertChild.test(command)) {
+        const matched = command.match(insertChild);
+        if (matched) {
+          const user = "ricco";
+          const [, nodeName, childName] = matched;
+          const res = await CmdsMethods.insertChildToNode(
+            nodeName,
+            childName,
+            user
+          );
+
+          if (res)
+            return {
+              type: "component",
+              command: originalCommand,
+              componentOutput: TreeMap,
+              props: "",
+            };
+
+          return CmdsMethods.responseTextOutput(originalCommand, "error");
+        }
+      } else if (removeNode.test(command)) {
+        const matched = command.match(removeNode);
+        if (matched) {
+          const user = "ricco";
+          const [, nodeName] = matched;
+          const method = command.split(" ")[0];
+          const res = await CmdsMethods.removeNode(user, nodeName, method);
+
+          if (res)
+            return {
+              type: "component",
+              command: originalCommand,
+              componentOutput: TreeMap,
+              props: "",
+            };
+
+          return CmdsMethods.responseTextOutput(originalCommand, "error");
+        }
+      } else if (updateNode.test(command)) {
+        const matched = command.match(updateNode);
+        if (matched) {
+          const user = "ricco";
+          const [, nodeName, updateNodeName] = matched;
+          const method = command.split(" ")[0];
+          const res = await CmdsMethods.removeNode(user, nodeName, method, updateNodeName);
+
+          if (res)
+            return {
+              type: "component",
+              command: originalCommand,
+              componentOutput: TreeMap,
+              props: "",
+            };
+
+          return CmdsMethods.responseTextOutput(originalCommand, "error");
+        }
+      } else {
+        const res = CmdsMethods.responseTextOutput(originalCommand, "error");
+        return res;
       }
   }
 }

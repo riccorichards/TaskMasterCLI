@@ -5,9 +5,9 @@ import path from "path";
 export const POST = async (req: NextRequest) => {
   try {
     const body = await req.json();
-    const { mapTree, userId } = body;
+    const { mapTree } = body;
 
-    if (!mapTree || !userId) {
+    if (!mapTree) {
       return new NextResponse(
         JSON.stringify({
           error: "Failed to add new task",
@@ -17,18 +17,18 @@ export const POST = async (req: NextRequest) => {
       );
     }
 
-    const filePath = path.join(".", "tempCont", `mapTree-${userId}.json`);
+    const filePath = path.join(".", "tempCont", `mapTree-${mapTree.user}.json`);
 
     await fs.writeFile(filePath, JSON.stringify(mapTree, null, 2), "utf-8");
 
-    return new NextResponse(JSON.stringify(mapTree, null, 2), {
+    return new NextResponse(JSON.stringify({ success: true, mapTree }), {
       status: 201,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
     return new NextResponse(
       JSON.stringify({
-        error: "Failed to create main node",
+        error: "Server error",
         details: error instanceof Error ? error.message : "Unknown error",
       }),
       { status: 500, headers: { "Content-Type": "application/json" } }

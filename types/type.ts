@@ -4,6 +4,11 @@ export interface DailyTask {
 }
 
 export interface MapTreeType {
+  name: string;
+  children: [];
+}
+
+export interface RootMapTreeType {
   user: string;
   userTree: {
     name: string;
