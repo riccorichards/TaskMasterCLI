@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const POST = async (req: NextRequest) => {
   try {
-    const { period } = await req.json();
+    const { period, username } = await req.json();
     const newPeriod = await prisma.timeStats.create({
-      data: { endTime: period, sumTimeHrs: 0, spendMsInTasks: [] },
+      data: { endTime: period, sumTimeHrs: 0, spendMsInTasks: [], username },
     });
 
     if (!newPeriod) {

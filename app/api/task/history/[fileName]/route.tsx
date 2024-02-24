@@ -1,20 +1,7 @@
+import { findFileByFileName } from "@/app/api/map-tree/get-map-tree/[fileName]/route";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import fs from "fs/promises";
-
-export async function findFileByFileName(dir: string, fileName: string) {
-  try {
-    const files = await fs.readdir(dir);
-
-    const file = files.find((f) => f.includes(fileName));
-    return file
-      ? path.join(dir, file)
-      : `File was not found with provided: ${fileName}`;
-  } catch (error) {
-    console.error("Error finding file by name:", error);
-    return false;
-  }
-}
 
 export const GET = async (
   req: NextRequest,
@@ -22,15 +9,13 @@ export const GET = async (
 ) => {
   try {
     const { fileName } = params;
-
-    const dir = path.join(process.cwd(), "tempCont", "mapTreeData");
-    const filePath = await findFileByFileName(dir, fileName as string);
-
+    const dir = path.join(process.cwd(), "tempCont", "history");
+    const filePath = await findFileByFileName(dir, fileName);
     if (!filePath) {
       return new NextResponse(
         JSON.stringify({
           error: "Failed to find file",
-          details: "Invalid data or server issue.",
+          details: filePath,
         }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );

@@ -1,8 +1,18 @@
 export const existingCmds = [
   {
+    id: 4,
+    cmd: "sign up where username = [Username], password = [Password]",
+    desc: "Simple but secure sign up process.",
+  },
+  {
+    id: 5,
+    cmd: "login -U [Username] -p [Password]",
+    desc: "Login to enter into system.",
+  },
+  {
     id: 1,
-    cmd: "time stats",
-    desc: "Display statistics about time tracking.",
+    cmd: "my stats",
+    desc: "Display statistics about time tracking, task complete and day quality.",
   },
   {
     id: 2,
@@ -11,18 +21,8 @@ export const existingCmds = [
   },
   {
     id: 3,
-    cmd: "insert time for period where id = [Time Stats ID] set hrs = [new Time]",
+    cmd: "insert time for period: [new Time]",
     desc: "Insert a new time entry for a specified period.",
-  },
-  {
-    id: 5,
-    cmd: "task stats",
-    desc: "Define result in percentage between total amount tasks and complete taks.",
-  },
-  {
-    id: 6,
-    cmd: "define my work quality",
-    desc: "Defines your quality in percentage.",
   },
   {
     id: 7,
@@ -46,12 +46,12 @@ export const existingCmds = [
   },
   {
     id: 11,
-    cmd: "show activity",
-    desc: "Display recent activity logs.",
+    cmd: "my history",
+    desc: "Display history logs.",
   },
   {
     id: 12,
-    cmd: "insert dailyTask [title], [desc]",
+    cmd: "insert daily task set title = [title], desc = [desc]",
     desc: "Add a new task to the system.",
   },
   {
@@ -61,7 +61,7 @@ export const existingCmds = [
   },
   {
     id: 14,
-    cmd: "remove task where id = [Task ID]",
+    cmd: "remove task where title = [Task Title]",
     desc: "Remove an existing task by its ID.",
   },
   {
@@ -136,7 +136,12 @@ export const existingCmds = [
   },
   {
     id: 31,
-    cmd: "quit [Username]",
-    desc: "Quit from the our account.",
+    cmd: "resize tree set w-[1/3, 1/2, 2/3]",
+    desc: "Close opened map tree.",
+  },
+  {
+    id: 32,
+    cmd: "quit",
+    desc: "Quit from the system.",
   },
 ];

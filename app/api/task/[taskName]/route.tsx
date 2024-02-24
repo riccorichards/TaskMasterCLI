@@ -92,11 +92,11 @@ export const PUT = async (
 
 export const DELETE = async (
   req: NextRequest,
-  { params }: { params: { taskId: string } }
+  { params }: { params: { taskName: string } }
 ) => {
   try {
-    const { taskId } = params;
-    await prisma.dailyTask.delete({ where: { id: taskId } });
+    const { taskName } = params;
+    await prisma.dailyTask.delete({ where: { title: taskName } });
 
     return new NextResponse(JSON.stringify("Successfully removed.", null, 2), {
       status: 200,

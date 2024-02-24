@@ -1,10 +1,17 @@
+"use client";
+
 import { DailyTastType } from "@/types/type";
 import CmdsMethods from "@/utils/methods";
 import { FC } from "react";
 
-const Task: FC<{ task: DailyTastType }> = ({ task }) => {
+const Task: FC<{ task: DailyTastType; opacity?: string }> = ({
+  task,
+  opacity = "opacity-100",
+}) => {
   return (
-    <div className="flex items-center gap-2 flex-wrap border-b-2 border-dashed">
+    <div
+      className={`flex items-center gap-2 flex-wrap border-b-2 border-dashed ${!task.done ? opacity : "opacity-100"}`}
+    >
       <div className="flex flex-col border-r-2 border-dashed items-start">
         <span>ID:</span>
         <span>{task.id}</span>

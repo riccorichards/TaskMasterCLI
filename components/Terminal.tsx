@@ -4,7 +4,6 @@ import React, { FC, useEffect } from "react";
 const Terminal: FC<{
   commands: Command[];
   inputRef: React.RefObject<HTMLInputElement>;
-  terminalPlace: string;
 }> = ({ commands, inputRef }) => {
   useEffect(() => {
     const inputElement = inputRef.current;
@@ -17,7 +16,7 @@ const Terminal: FC<{
       }
     }
   }, [commands, inputRef]);
-  
+
   return (
     <div className="cli-output">
       {commands.map((cmd, index) => (

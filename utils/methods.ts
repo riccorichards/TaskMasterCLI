@@ -1,7 +1,13 @@
 import { existingCmds } from "@/tempCont/index";
 import { makeRequest } from "./makeRequest";
 import { Command, TextCommand } from "@/app/page";
-import { MapTreeType, RootMapTreeType } from "@/types/type";
+import {
+  HistoryTastType,
+  DailyTastType,
+  MapTreeType,
+  RootMapTreeType,
+} from "@/types/type";
+import groupBy from "lodash/groupBy";
 
 class CmdsMethods {
   static help() {
@@ -14,9 +20,27 @@ class CmdsMethods {
     });
   }
 
-  static async addTask({ title, desc }: { title: string; desc: string }) {
+  static errorhandler(error: unknown, errorOutput?: string): string {
+    if (error instanceof Error) {
+      return error.message;
+    }
+    console.error(error);
+    const errorExec = errorOutput ? errorOutput : "Unknown error: " + error;
+    return errorExec;
+  }
+
+  static async addTask({
+    username,
+    title,
+    desc,
+  }: {
+    username: string;
+    title: string;
+    desc: string;
+  }) {
     try {
       const res = await makeRequest("/api/task/create-task", "POST", {
+        username,
         title,
         desc,
       });
@@ -24,40 +48,41 @@ class CmdsMethods {
 
       return `Creating a new task done successfully: ${JSON.stringify(res)}`;
     } catch (error) {
-      console.log(error);
+      this.errorhandler(error);
     }
   }
 
-  static async addPeriod(period: string) {
+  static async addPeriod(period: string, username: string) {
     try {
       const res = await makeRequest("/api/time-stats/add-period", "POST", {
-        period,
+        period: new Date(period),
+        username,
       });
       if (!res) throw new Error("Error while add a new period");
 
       return `Your micro goal will be finished at ${JSON.stringify(res)}`;
     } catch (error) {
-      console.log(error);
+      this.errorhandler(error);
     }
   }
 
   static async addHrsForPeriod({
     sumTimeHrs,
-    timeStatsID,
+    username,
   }: {
     sumTimeHrs: number;
-    timeStatsID: string;
+    username: string;
   }) {
     try {
       const res = await makeRequest("/api/time-stats/add-sum-hrs", "PUT", {
         sumTimeHrs,
-        timeStatsID,
+        username,
       });
       if (!res) throw new Error("Error while add a new period");
 
       return `Your micro goal will be finished at ${JSON.stringify(res)}`;
     } catch (error) {
-      console.log(error);
+      this.errorhandler(error);
     }
   }
 
@@ -79,38 +104,16 @@ class CmdsMethods {
 
       return `Successfully updated: ${JSON.stringify(res)}`;
     } catch (error) {
-      console.log(error);
+      this.errorhandler(error);
     }
   }
 
-  static async doneTask({
-    taskId,
-    done,
-    spendMs,
-  }: {
-    taskId: string;
-    done: boolean;
-    spendMs: number;
-  }) {
+  static async removeTask(taskName: string) {
     try {
-      const res = await makeRequest(`/api/task/${taskId}`, "PUT", {
-        done,
-        spendMs,
-      });
-      if (!res) throw new Error("Error while declaring task as a done");
-
-      return `Successfully declared: ${JSON.stringify(res)}`;
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  static async removeTask(taskId: string) {
-    try {
-      await makeRequest(`/api/task/${taskId}`, "DELETE");
+      await makeRequest(`/api/task/${taskName}`, "DELETE");
       return `Successfully Removed.`;
     } catch (error) {
-      console.log(error);
+      this.errorhandler(error);
     }
   }
 
@@ -132,7 +135,7 @@ class CmdsMethods {
       if (!res) throw new Error("Error while adding a new note");
       return `Successfully Added note: ${JSON.stringify(res)}`;
     } catch (error) {
-      console.log(error);
+      this.errorhandler(error);
     }
   }
 
@@ -156,7 +159,7 @@ class CmdsMethods {
       if (!res) throw new Error("Error while updating note");
       return `Successfully updated note: ${JSON.stringify(res)}`;
     } catch (error) {
-      console.log(error);
+      this.errorhandler(error);
     }
   }
 
@@ -174,7 +177,7 @@ class CmdsMethods {
       if (!res) throw new Error("Error while updating note");
       return `Successfully updated note: ${JSON.stringify(res)}`;
     } catch (error) {
-      console.log(error);
+      this.errorhandler(error);
     }
   }
 
@@ -183,7 +186,7 @@ class CmdsMethods {
       await makeRequest(`/api/note/${noteId}`, "DELETE");
       return `Successfully Removed.`;
     } catch (error) {
-      console.log(error);
+      this.errorhandler(error);
     }
   }
 
@@ -220,13 +223,16 @@ class CmdsMethods {
   static responseTextOutput(
     command: string,
     type: "error" | "success",
-    output?: string
+    output?: string,
+    errorOutput?: string
   ): TextCommand {
     if (type === "error") {
       return {
         type: "text",
         command,
-        textOutput: `Error: Unknown command: ${command.split("/>")[1]}`,
+        textOutput: errorOutput
+          ? errorOutput
+          : `Error: Unknown command: ${command.split("/>")[1]}`,
       };
     } else {
       return {
@@ -251,7 +257,7 @@ class CmdsMethods {
   }
 
   static capitalized(str: string) {
-    const firstChar = str.charAt(0);
+    const firstChar = str.charAt(0).toUpperCase();
     return firstChar + str.slice(1);
   }
 
@@ -266,13 +272,17 @@ class CmdsMethods {
       },
     };
 
-    const res = await makeRequest("/api/map-tree/main-node", "POST", {
-      mapTree,
-    });
+    try {
+      const res = await makeRequest("/api/map-tree/main-node", "POST", {
+        mapTree,
+      });
 
-    if (!res) return false;
+      if (!res) return false;
 
-    return res;
+      return res;
+    } catch (error) {
+      this.errorhandler(error);
+    }
   }
 
   static async retrieveFile(fileName: string) {
@@ -282,13 +292,12 @@ class CmdsMethods {
         "GET"
       );
       if (!res) {
-        console.log(res);
         throw new Error(`File was not found with provided: ${fileName}`);
       }
 
       return res;
     } catch (error) {
-      console.log(error);
+      this.errorhandler(error);
       throw new Error(`File was not found with provided: ${fileName}`);
     }
   }
@@ -316,7 +325,7 @@ class CmdsMethods {
 
       return res;
     } catch (error) {
-      console.log(error);
+      this.errorhandler(error);
       throw new Error(`Error while inserting a new node: ${newNode}`);
     }
   }
@@ -344,7 +353,7 @@ class CmdsMethods {
 
       return res;
     } catch (error) {
-      console.log(error);
+      this.errorhandler(error);
       throw new Error(
         `File was not found with provided: ${fileName} or server issue`
       );
@@ -352,11 +361,132 @@ class CmdsMethods {
   }
 
   static formatingDate(createAt: string) {
-    const date = createAt.split("T")[0]
+    const [date, time] = createAt.split("T");
+    const [hr, min] = time ? time.split(":") : ["00", "00"];
     return {
       date,
-      time: createAt.split("T")[1].split(".")
+      time: `${hr}:${min}`,
+    };
+  }
+
+  static async dayFinishMethod(username: string) {
+    try {
+      const res = await makeRequest(
+        `/api/task/user-task/${username}`,
+        "DELETE"
+      );
+      return res;
+    } catch (error) {
+      this.errorhandler(error);
+      return `Error while processing day finish for: ${username}`;
     }
+  }
+
+  static completeTasks(tasks: DailyTastType[] | HistoryTastType[]) {
+    return tasks.filter((task) => task.done).length;
+  }
+
+  static calcCompleteTasksPercentage(
+    tasks: HistoryTastType[] | DailyTastType[]
+  ) {
+    return (this.completeTasks(tasks) / tasks.length) * 100;
+  }
+
+  static defineRemainDays(period: string, customDate: number | null = null) {
+    const endTime = new Date(period);
+    const toDay = customDate ? new Date(customDate) : new Date();
+
+    //normalize both days at the start of the day
+    endTime.setHours(0, 0, 0, 0);
+    toDay.setHours(0, 0, 0, 0);
+
+    //define the difference between target day and today in milleseconds
+    const differentInTime = endTime.getTime() - toDay.getTime();
+    //convert milleseconds into days
+    const differenceInDays = Math.ceil(differentInTime / (1000 * 3600 * 24));
+    return differenceInDays;
+  }
+
+  static totalQuality(
+    tasks: HistoryTastType[],
+    periodHrs: number,
+    period: string
+  ) {
+    //define task result in percentage (complete / total) * 100
+    const taskResult = this.calcCompleteTasksPercentage(tasks);
+
+    //the first work day with our application
+    const startDay = tasks[0].createdAt;
+    //it calculates the entire days from the first day to the target day
+    const remainDays = this.defineRemainDays(period, startDay);
+    //it calculates percentage: total hours / the remain days
+    const workHrsPerDay = periodHrs / remainDays; // example 250 hrs / 50 days = 5 hrs per day
+
+    //defines the remains days from today
+    const remainDaysFromToday = this.defineRemainDays(period);
+    const currentWorkHrsPerDay = periodHrs / remainDaysFromToday;
+
+    //defiens the percentage of our works
+    const workingHrsQuality = (workHrsPerDay / currentWorkHrsPerDay) * 100;
+
+    return (taskResult + workingHrsQuality) / 2;
+  }
+
+  static totalWorkingHrs(tasks: HistoryTastType[]) {
+    return this.formatDuration(
+      tasks.reduce((acc, task) => acc + task.duration, 0)
+    );
+  }
+
+  static groupedTaskByField(tasks: HistoryTastType[], field: string) {
+    return groupBy(tasks, field);
+  }
+
+  static toplearnedTopics(tasks: HistoryTastType[]) {
+    const groupedTasks = this.groupedTaskByField(tasks, "workSpace");
+    const result = [];
+    for (const workSpace in groupedTasks) {
+      const workspaceTasks = groupedTasks[workSpace];
+      const workSpaceLen = workspaceTasks.length * 0.45;
+      const workSpaceCompletion = this.completeTasks(workspaceTasks) * 0.2;
+      const workSpaceDuration =
+        (workspaceTasks.reduce((sum, task) => sum + task.duration, 0) / 450) *
+        0.35;
+
+      const value = workSpaceCompletion + workSpaceDuration + workSpaceLen;
+      result.push({
+        name: workSpace,
+        value,
+      });
+    }
+
+    return result.sort((a, b) => b.value - a.value).slice(0, 10);
+  }
+
+  static dailyProgress(tasks: HistoryTastType[]) {
+    const groupedTasks = this.groupedTaskByField(tasks, "createdAt");
+    const result = [];
+
+    for (const date in groupedTasks) {
+      const dailyTask = groupedTasks[date];
+      const completeTasks = this.completeTasks(dailyTask);
+
+      result.push({
+        date,
+        value: (completeTasks / dailyTask.length) * 100,
+      });
+    }
+
+    return result;
+  }
+
+  static refreshPage() {
+    return window.location.reload();
+  }
+
+  static logout() {
+    localStorage.removeItem("CLI-user");
+    return this.refreshPage();
   }
 }
 

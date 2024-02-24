@@ -1,3 +1,6 @@
+"use client";
+
+
 import CmdsMethods from "@/utils/methods";
 
 const Help = () => {

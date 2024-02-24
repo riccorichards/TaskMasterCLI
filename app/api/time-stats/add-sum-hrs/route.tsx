@@ -3,10 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const PUT = async (req: NextRequest) => {
   try {
-    const { sumTimeHrs, timeStatsID } = await req.json();
+    const { sumTimeHrs, username } = await req.json();
 
     const updatedTimeManagement = await prisma.timeStats.update({
-      where: { id: timeStatsID },
+      where: { username },
       data: {
         sumTimeHrs,
       },

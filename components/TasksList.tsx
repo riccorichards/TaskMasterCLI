@@ -1,13 +1,15 @@
 import { useTaskStore } from "@/store/TaskStore";
-import { useEffect } from "react";
+import { FC, use, useEffect } from "react";
 import Task from "./Task";
 
-const TasksList = () => {
+const TasksList: FC<{ username: string }> = ({ username }) => {
   const { tasks, isLoading, fetchTasks, error } = useTaskStore();
 
   useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
+    if (username) {
+      fetchTasks(username);
+    }
+  }, [fetchTasks, username]);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;

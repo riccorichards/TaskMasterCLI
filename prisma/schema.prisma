@@ -10,13 +10,14 @@ datasource db {
 
 model User {
   id String @id @default(uuid())
-  username String 
+  username String @unique
   password String
   createdAt DateTime @default(now())
 }
 
 model DailyTask {
   id String @id @default(uuid())
+  username String
   title String @unique
   desc String
   done Boolean @default(false)
@@ -26,6 +27,7 @@ model DailyTask {
 
 model TimeStats {
   id String @id @default(uuid())
+  username String @unique
   endTime String
   sumTimeHrs Int
   spendMsInTasks Int[]
@@ -33,17 +35,10 @@ model TimeStats {
 
 model Note {
   id String @id @default(uuid())
+  username String
   title String
   desc String
   deadline String
   complete Boolean @default(false)
-  createdAt DateTime @default(now())
-}
-
-model Act {
-  id Int @id @default(autoincrement())
-  workSpace String
-  task String
-  status Boolean 
   createdAt DateTime @default(now())
 }

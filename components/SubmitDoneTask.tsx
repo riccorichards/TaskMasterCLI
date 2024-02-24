@@ -1,3 +1,5 @@
+"use client";
+
 import { useTaskStore } from "@/store/TaskStore";
 import { useTimerStore } from "@/store/TimerStore";
 import { FC, useEffect, useState } from "react";

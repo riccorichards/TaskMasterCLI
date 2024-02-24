@@ -1,8 +1,11 @@
 "use client";
 
 import Input from "@/components/Input";
+import IntroDetails from "@/components/IntroDetails";
+import MemoizedNewCmd from "@/components/NewCommand";
 import SubmitDoneTask from "@/components/SubmitDoneTask";
 import MemoizedTerminal from "@/components/Terminal";
+import { useAuthStore } from "@/store/AuthStore";
 import { useTimerStore } from "@/store/TimerStore";
 import Context from "@/utils/Context";
 import { defineProcess } from "@/utils/defineProcess";
@@ -25,22 +28,40 @@ type ComponentCommand = {
 export type Command = TextCommand | ComponentCommand;
 
 export default function Home() {
-  const [terminalPlace, setTerminalPlace] = useState<string>("/basic");
+  const { user } = useAuthStore();
+  const [terminalPlace, setTerminalPlace] = useState<string>("/unauthorized");
   const [input, setInput] = useState<string>("");
   const [commands, setCommands] = useState<Command[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const isExistRunTimeCmd = useRef<boolean>(false);
   const { ms, taskTitle } = useTimerStore();
+  const [userFromStorage, setUserFromStorage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [commands]);
+    const takeUserFromLocalStorage = () => {
+      const getUser = localStorage.getItem("CLI-user");
+      if (getUser) {
+        setUserFromStorage(JSON.parse(getUser));
+      }
+    };
+
+    takeUserFromLocalStorage();
+
+    window.addEventListener("storage", takeUserFromLocalStorage);
+
+    return () => {
+      window.removeEventListener("storage", takeUserFromLocalStorage);
+    };
+  }, []);
 
   const handleCommand = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && input) {
-      const newCommand = `Beta version/ricco${terminalPlace}/> ${input.trim()}`;
+      const newCommand =
+        user || userFromStorage
+          ? `Beta version/${
+              user || userFromStorage
+            }${terminalPlace}/> ${input.trim()}`
+          : `Beta version${terminalPlace}/> ${input.trim()}`;
 
       const output = await processCommand(newCommand);
 
@@ -53,29 +74,24 @@ export default function Home() {
   };
 
   useEffect(() => {
+    if (user || userFromStorage) {
+      return setTerminalPlace("/basic");
+    }
+  }, [user, userFromStorage]);
+
+  useEffect(() => {
     if (ms && taskTitle) {
       const newCommandRespose = {
         type: "component",
-        command: `Beta version/ricco${terminalPlace}/> completion process...`,
+        command: `Beta version/${
+          user || userFromStorage
+        }${terminalPlace}/> completion process...`,
         componentOutput: SubmitDoneTask,
         props: { ms, taskTitle },
       };
       setCommands((prev) => [...prev, newCommandRespose as Command]);
     }
-  }, [ms, taskTitle, terminalPlace]);
-
-  useEffect(() => {
-    const handleKeyboard = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (commands.length > 1) {
-        if (e.key === "Up") {
-          const previousCmd = commands[commands.length - 1].command;
-          setInput(previousCmd);
-        } else if (e.key === "Down") {
-        }
-      }
-    };
-    handleKeyboard;
-  }, [commands]);
+  }, [ms, taskTitle, terminalPlace, userFromStorage, user]);
 
   const reset = () => {
     setCommands([]);
@@ -120,23 +136,17 @@ export default function Home() {
 
   return (
     <Context.Provider value={{ removeCommand }}>
-      <div>
-        <MemoizedTerminal
-          commands={commands}
-          inputRef={inputRef}
+      <div className="flex flex-col gap-1">
+        {terminalPlace === "/unauthorized" && <IntroDetails />}
+        <MemoizedTerminal commands={commands} inputRef={inputRef} />
+        <MemoizedNewCmd
+          setInput={setInput}
+          handleCommand={handleCommand}
           terminalPlace={terminalPlace}
+          input={input}
+          commands={commands}
+          userRef={userFromStorage}
         />
-        <span className="flex gap-2 items-center">
-          <span className="whitespace-nowrap">
-            {`Beta version/ricco${terminalPlace}`}/&gt;
-          </span>{" "}
-          <Input
-            inputRef={inputRef}
-            input={input}
-            setInput={setInput}
-            handleCommand={handleCommand}
-          />
-        </span>
       </div>
     </Context.Provider>
   );

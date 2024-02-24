@@ -4,10 +4,10 @@ import { NextRequest, NextResponse } from "next/server";
 export const POST = async (req: NextRequest) => {
   try {
     const body = await req.json();
-    const { title, desc } = body;
+    const { title, desc, username } = body;
 
     const newTast = await prisma.dailyTask.create({
-      data: { title, desc, spendMs: 0 },
+      data: { title, desc, spendMs: 0, username },
     });
 
     if (!newTast)

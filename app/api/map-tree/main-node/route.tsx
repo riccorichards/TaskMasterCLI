@@ -17,7 +17,12 @@ export const POST = async (req: NextRequest) => {
       );
     }
 
-    const filePath = path.join(".", "tempCont", `mapTree-${mapTree.user}.json`);
+    const filePath = path.join(
+      ".",
+      "tempCont",
+      "mapTreeData",
+      `${mapTree.user}.json`
+    );
 
     await fs.writeFile(filePath, JSON.stringify(mapTree, null, 2), "utf-8");
 
