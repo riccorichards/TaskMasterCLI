@@ -70,8 +70,6 @@ export function refreshPage() {
   return window.location.reload();
 }
 
-export function generateRegexPattern(command: string) {}
-
 export function logout() {
   localStorage.removeItem("CLI-user");
   return refreshPage();

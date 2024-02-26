@@ -145,13 +145,13 @@ export const existingCmds = [
   },
   {
     id: 28,
-    cmd: "remove node where nodeName = [Node Name]",
+    cmd: "remove node where node = [Node Name]",
     desc: "Remove the node with node's name.",
     area: "tree",
   },
   {
     id: 29,
-    cmd: "update node where nodeName = [Node Name] set [New Name]",
+    cmd: "update node where node = [Node Name] set [New Name]",
     desc: "Update the node with node's name.",
     area: "tree",
   },
@@ -162,40 +162,9 @@ export const existingCmds = [
     area: "tree",
   },
   {
-    id: 31,
-    cmd: "resize tree set w-[1/3, 1/2, 2/3]",
-    desc: "Resize viewport of tree map chart.",
-    area: "tree",
-  },
-  {
     id: 32,
     cmd: "quit",
     desc: "Quit from the system.",
     area: "auth",
   },
 ];
-
-export const interactiveCmds = [
-  "sign up where username = [Username], password = [Password]",
-  "login -U [Username] -p [Password]",
-  "insert journey duration: [New Deadline]",
-  "insert time for period: [new Time]",
-  "insert daily task set title = [title], desc = [desc]",
-  "edit task where id = [Task ID] set title = [New Title], desc = [New Desc]",
-  "remove task where title = [Task Title]",
-  "insert note title = [New Title], desc = [New Desc], deadline = [New Time]",
-  "edit note where id = [NoteId] set title = [New Title], desc [New desc], deadline = [New Deadline]",
-  "remove note where id = [NoteId]",
-  "done note where id = [NoteId] complete = [Boolean]",
-  "run timer for [Task Title]",
-  "insert node: [Main Goal]",
-  "insert child where node = [Existing Node] add [Sub Node]",
-  "remove node where nodeName = [Node Name]",
-  "update node where nodeName = [Node Name] set [New Name]",
-  "resize tree set w-[1/3, 1/2, 2/3]",
-];
-
-export function interactiveCmdRecognizer(targetCmd: string) {
-  const commands = interactiveCmds;
-  return commands.findIndex((cmd) => cmd === targetCmd);
-}

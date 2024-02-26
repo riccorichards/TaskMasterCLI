@@ -128,7 +128,12 @@ export const treeMapProcess = async ({
       return responseTextOutput(originalCommand, "error", "", res.message);
     }
   } else if (command === "close map tree") {
-    return responseTextOutput(originalCommand, "success", "closed map free");
+    return {
+      type: "component",
+      command: originalCommand,
+      componentOutput: TreeMap,
+      props: { fileName, close: true },
+    };
   } else if (command === "quit") {
     return logout();
   } else {

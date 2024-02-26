@@ -2,7 +2,10 @@ import { retrieveFile } from "@/utils/treeUtils";
 import RoadMapEchart from "echarts-for-react";
 import { FC, useEffect, useState } from "react";
 
-const TreeMap: FC<{ fileName: string }> = ({ fileName }) => {
+const TreeMap: FC<{ fileName: string; close?: boolean }> = ({
+  fileName,
+  close = false,
+}) => {
   const [mapTree, setMapTree] = useState<any>(null);
 
   useEffect(() => {
@@ -12,13 +15,12 @@ const TreeMap: FC<{ fileName: string }> = ({ fileName }) => {
 
         if (res.status === "success") return setMapTree(res.data);
 
-       return setMapTree(res.message);
+        return setMapTree(res.message);
       };
 
       handleRetrieveFile();
     }
   }, [fileName]);
-
 
   if (!mapTree) return <div>Loading...</div>;
 
