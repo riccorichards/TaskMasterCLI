@@ -46,7 +46,7 @@ export function calcCompleteTasksPercentage(
 
 export function defineRemainDays(
   period: string,
-  customDate: number | null = null
+  customDate: string | null = null
 ) {
   const endTime = new Date(period);
   const toDay = customDate ? new Date(customDate) : new Date();
@@ -113,18 +113,24 @@ export function toplearnedTopics(tasks: HistoryTastType[]) {
 }
 
 export function dailyProgress(tasks: HistoryTastType[]) {
-  const groupedTasks = groupedTaskByField(tasks, "createdAt");
-  const result = [];
+  // Create a map to group tasks by date
+  const groupedTasks = new Map<string, HistoryTastType[]>();
 
-  for (const date in groupedTasks) {
-    const dailyTask = groupedTasks[date];
-    const doneTasks = completeTasks(dailyTask);
-
-    result.push({
-      date: date.split("T")[0],
-      value: (doneTasks / dailyTask.length) * 100,
-    });
+  // Populate the map with tasks grouped by date
+  for (const task of tasks) {
+    const date = task.createdAt.split("T")[0]; // Get only the date portion
+    const existingTasks = groupedTasks.get(date) || [];
+    groupedTasks.set(date, [...existingTasks, task]);
   }
+
+  // Calculate the completion percentage for each group
+  const result = Array.from(groupedTasks).map(([date, dailyTasks]) => {
+    const doneTasks = dailyTasks.filter((task) => task.done).length;
+    return {
+      date,
+      value: (doneTasks / dailyTasks.length) * 100,
+    };
+  });
 
   return result;
 }

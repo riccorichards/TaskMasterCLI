@@ -65,7 +65,12 @@ export interface HistoryTastType {
   task: string;
   done: boolean;
   duration: number;
-  createdAt: number;
+  createdAt: string;
+}
+
+export interface TreeNode {
+  name: string;
+  children: TreeNode[];
 }
 
 export interface NotesType {

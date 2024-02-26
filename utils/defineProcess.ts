@@ -66,6 +66,7 @@ export async function defineProcess(
         setTerminalPlace,
         terminalPlace,
         setRunningTaskId,
+        username,
       });
   }
 }

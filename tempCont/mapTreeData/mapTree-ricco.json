@@ -1,23 +1,23 @@
 {
   "user": "ricco",
   "userTree": {
-    "name": "Blockchain with Python",
+    "name": "Waiting stage",
     "children": [
       {
-        "name": "Blockchain",
+        "name": "Freelance platforms",
         "children": [
           {
-            "name": "Smart contracts",
-            "children": []
-          },
-          {
-            "name": "another Contracts",
+            "name": "Upwork",
             "children": []
           }
         ]
       },
       {
-        "name": "Python",
+        "name": "Data structure & algs",
+        "children": []
+      },
+      {
+        "name": "Certification",
         "children": []
       }
     ]

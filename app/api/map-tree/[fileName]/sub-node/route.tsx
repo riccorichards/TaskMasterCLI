@@ -2,73 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
 import { findFileByFileName } from "@/utils/fileUtils";
+import { addNodeToTree, updateNodeIntoTree } from "@/utils/treeUtils";
 
-interface TreeNode {
-  name: string;
-  children: TreeNode[];
-}
-
-const addNodeToTree = (
-  node: TreeNode,
-  nodeName: string,
-  newNode: TreeNode
-): boolean => {
-  nodeName = nodeName.trim();
-  if (node.name === nodeName) {
-    node.children.push(newNode);
-    return true;
-  }
-
-  for (const child of node.children) {
-    if (addNodeToTree(child, nodeName, newNode)) {
-      return true;
-    }
-  }
-
-  return false;
-};
-
-const updateNodeIntoTree = (
-  node: TreeNode,
-  nodeName: string,
-  method: "remove" | "update",
-  updatedNodeName?: string
-): boolean => {
-  nodeName = nodeName.trim();
-
-  if (node.name === nodeName) {
-    if (method === "update" && updatedNodeName) {
-      node.name = updatedNodeName;
-    } else if (method === "remove") {
-      return false;
-    }
-    return true;
-  }
-
-  for (let i = 0; i < node.children.length; i++) {
-    if (node.children[i].name === nodeName) {
-      if (method === "update" && updatedNodeName) {
-        node.children[i].name = updatedNodeName;
-      } else if (method === "remove") {
-        node.children.splice(i, 1);
-      }
-
-      return true;
-    }
-
-    if (
-      updateNodeIntoTree(node.children[i], nodeName, method, updatedNodeName)
-    ) {
-      return true;
-    }
-  }
-
-  return false;
-};
-
-export const POST = async (req: NextRequest) => {
+export const POST = async (
+  req: NextRequest,
+  { params }: { params: { fileName: string } }
+) => {
   try {
     const body = await req.json();
+    const { fileName } = params;
     if (!body) {
       return new NextResponse(
         JSON.stringify({
@@ -79,10 +21,9 @@ export const POST = async (req: NextRequest) => {
       );
     }
 
-    const { newNode, nodeName, user } = body;
+    const { newNode, nodeName } = body;
 
     const dir = path.join(process.cwd(), "tempCont", "mapTreeData");
-    const fileName = `mapTree-${user}.json`;
     const filePath = await findFileByFileName(dir, fileName);
 
     if (!filePath) {
@@ -124,10 +65,13 @@ export const POST = async (req: NextRequest) => {
   }
 };
 
-export const PUT = async (req: NextRequest) => {
+export const PUT = async (
+  req: NextRequest,
+  { params }: { params: { fileName: string } }
+) => {
   try {
     const body = await req.json();
-
+    const { fileName } = params;
     if (!body) {
       return new NextResponse(
         JSON.stringify({
@@ -138,7 +82,7 @@ export const PUT = async (req: NextRequest) => {
       );
     }
 
-    const { fileName, nodeName, method, updatedNodeName } = body;
+    const { nodeName, method, updatedNodeName } = body;
 
     const dir = path.join(process.cwd(), "tempCont", "mapTreeData");
     const filePath = await findFileByFileName(dir, fileName);

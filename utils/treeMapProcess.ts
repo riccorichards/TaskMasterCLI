@@ -1,12 +1,17 @@
 import TreeMap from "@/components/TreeMap";
-import { logout, responseTextOutput } from "./toolsUtils";
-import { insertChildToNode, insertMainNode, removeNode } from "./treeUtils";
+import { capitalized, logout, responseTextOutput } from "./toolsUtils";
+import {
+  insertChildToNode,
+  insertMainNode,
+  updateNodeInTree,
+} from "./treeUtils";
 import mainTerminalCmd from "./mainTerminalCmd";
 import { Command } from "@/app/page";
 import { parametersType } from "./defineProcess";
 
 interface TreeMapType extends parametersType {
   command: string;
+  username: string;
 }
 
 export const treeMapProcess = async ({
@@ -16,26 +21,30 @@ export const treeMapProcess = async ({
   resetExceptTimerCmds,
   isRunTimer,
   setTerminalPlace,
+  username,
 }: TreeMapType): Promise<Command | void> => {
-  const insertMainNodeRegax = /^insert node:\s*(.+)$/;
+  const insertMainNodeRegax = /^insert node\s*(.+)$/;
   const insertChild = /^insert child where node =\s*(.+?)\s*add\s*(.+)$/;
-  const removeNodeRegax = /^remove node where nodeName =\s*(.+)$/;
-  const updateNode = /^update node where nodeName =\s*(.+?)\s*set\s*(.+)$/;
+  const removeNodeRegax = /^remove node where node =\s*(.+)$/;
+  const updateNode = /^update node where node =\s*(.+?)\s*set\s*(.+)$/;
 
+  const fileName = `mapTree-${username}.json`;
   if (insertMainNodeRegax.test(command)) {
     const matched = command.match(insertMainNodeRegax);
     if (matched) {
       const [, mainNode] = matched;
-      const res = insertMainNode(mainNode);
+      const res = await insertMainNode({ mainNode, username });
 
-      if (!res) return responseTextOutput(originalCommand, "error");
+      if (res.status === "success") {
+        return {
+          type: "component",
+          command: originalCommand,
+          componentOutput: TreeMap,
+          props: { fileName },
+        };
+      }
 
-      return {
-        type: "component",
-        command: originalCommand,
-        componentOutput: TreeMap,
-        props: "",
-      };
+      return responseTextOutput(originalCommand, "error", "", res.message);
     }
   } else if (
     command === "help" ||
@@ -57,60 +66,66 @@ export const treeMapProcess = async ({
       type: "component",
       command: originalCommand,
       componentOutput: TreeMap,
-      props: "",
+      props: { fileName },
     };
   } else if (insertChild.test(command)) {
     const matched = command.match(insertChild);
     if (matched) {
-      const user = "ricco";
       const [, nodeName, childName] = matched;
-      const res = await insertChildToNode(nodeName, childName, user);
+      const res = await insertChildToNode({
+        nodeName: capitalized(nodeName),
+        childName: capitalized(childName),
+        fileName,
+      });
 
-      if (res)
+      if (res.status === "success")
         return {
           type: "component",
           command: originalCommand,
           componentOutput: TreeMap,
-          props: "",
+          props: { fileName },
         };
 
-      return responseTextOutput(originalCommand, "error");
+      return responseTextOutput(originalCommand, "error", "", res.message);
     }
   } else if (removeNodeRegax.test(command)) {
     const matched = command.match(removeNodeRegax);
     if (matched) {
-      const user = "ricco";
       const [, nodeName] = matched;
       const method = command.split(" ")[0];
-      const res = await removeNode(user, nodeName, method);
+      const res = await updateNodeInTree({ fileName, nodeName, method });
 
-      if (res)
+      if (res.status === "success")
         return {
           type: "component",
           command: originalCommand,
           componentOutput: TreeMap,
-          props: "",
+          props: { fileName },
         };
 
-      return responseTextOutput(originalCommand, "error");
+      return responseTextOutput(originalCommand, "error", "", res.message);
     }
   } else if (updateNode.test(command)) {
     const matched = command.match(updateNode);
     if (matched) {
-      const user = "ricco";
-      const [, nodeName, updateNodeName] = matched;
+      const [, nodeName, updatedNodeName] = matched;
       const method = command.split(" ")[0];
-      const res = await removeNode(user, nodeName, method, updateNodeName);
+      const res = await updateNodeInTree({
+        fileName,
+        nodeName,
+        method,
+        updatedNodeName,
+      });
 
-      if (res)
+      if (res.status === "success")
         return {
           type: "component",
           command: originalCommand,
           componentOutput: TreeMap,
-          props: "",
+          props: { fileName },
         };
 
-      return responseTextOutput(originalCommand, "error");
+      return responseTextOutput(originalCommand, "error", "", res.message);
     }
   } else if (command === "close map tree") {
     return responseTextOutput(originalCommand, "success", "closed map free");

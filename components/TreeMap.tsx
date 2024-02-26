@@ -1,24 +1,24 @@
 import { retrieveFile } from "@/utils/treeUtils";
 import RoadMapEchart from "echarts-for-react";
-import { useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
-const TreeMap = () => {
+const TreeMap: FC<{ fileName: string }> = ({ fileName }) => {
   const [mapTree, setMapTree] = useState<any>(null);
 
-  const handleRetrieveFile = async () => {
-    const fileName = "mapTree-ricco.json";
-    try {
-      const res = await retrieveFile(fileName);
-
-      if (res) setMapTree(res);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   useEffect(() => {
-    handleRetrieveFile();
-  }, []);
+    if (fileName) {
+      const handleRetrieveFile = async () => {
+        const res = await retrieveFile(fileName);
+
+        if (res.status === "success") return setMapTree(res.data);
+
+       return setMapTree(res.message);
+      };
+
+      handleRetrieveFile();
+    }
+  }, [fileName]);
+
 
   if (!mapTree) return <div>Loading...</div>;
 
