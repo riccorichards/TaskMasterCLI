@@ -4,7 +4,10 @@ import { create } from "zustand";
 
 interface TimerStore extends TimerStoreType {
   getTimerInfo: (ms: number | null, taskTitle: string | null) => void;
-  sendDoneTaskInfo: (info: DoneTaskType) => Promise<string | undefined>;
+  sendDoneTaskInfo: (
+    info: DoneTaskType,
+    username: string
+  ) => Promise<string | undefined>;
 }
 
 export const useTimerStore = create<TimerStore>((set) => ({
@@ -13,24 +16,23 @@ export const useTimerStore = create<TimerStore>((set) => ({
   taskTitle: null,
   error: null,
   getTimerInfo: (ms, taskTitle) => set({ ms, taskTitle }),
-  sendDoneTaskInfo: async (info) => {
+  sendDoneTaskInfo: async (info, username) => {
     set(() => ({ isLoading: true }));
-    try {
-      const { title, ...other } = info;
-      const response = await makeRequest(`/api/task/${title}`, "PUT", {
+    const { taskId, ...other } = info;
+    const response = await makeRequest<string>(
+      `/api/task/${username}/${taskId}`,
+      "PUT",
+      {
         ...other,
-      });
-      if (response) {
-        set(() => ({ isLoading: false }));
-        set(() => ({ ms: null, taskTitle: null }));
-        return "Success: Task marked as a complete...";
       }
-    } catch (error) {
+    );
+    if (response.status === "success") {
+      set(() => ({ isLoading: false }));
+      set(() => ({ ms: null, taskTitle: null }));
+      return "Success: Task marked as a complete...";
+    } else {
       set(() => ({
-        error:
-          error instanceof Error
-            ? error.message
-            : "An occupated Error: " + error,
+        error: response.message,
         isLoading: false,
       }));
     }

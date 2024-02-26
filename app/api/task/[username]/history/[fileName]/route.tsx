@@ -1,7 +1,7 @@
-import { findFileByFileName } from "@/app/api/map-tree/get-map-tree/[fileName]/route";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import fs from "fs/promises";
+import { findFileByFileName } from "@/utils/fileUtils";
 
 export const GET = async (
   req: NextRequest,

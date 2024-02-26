@@ -2,13 +2,16 @@
 
 import { useStatsStore } from "@/store/StatsStore";
 import { useTaskStore } from "@/store/TaskStore";
-import CmdsMethods from "@/utils/methods";
+import {
+  calcCompleteTasksPercentage,
+  totalQuality,
+  totalWorkingHrs,
+} from "@/utils/statsUtils";
 import { FC, useEffect } from "react";
 
 const MyStats: FC<{ username: string }> = ({ username }) => {
   const { stats, isLoading, error, fetchTimeStats } = useStatsStore();
   const { history, fetchHistory } = useTaskStore();
-  //Total quality = 81.98%
 
   useEffect(() => {
     if (username) {
@@ -17,7 +20,7 @@ const MyStats: FC<{ username: string }> = ({ username }) => {
       }
       if (!history) {
         const fileName = `history-${username}.json`;
-        fetchHistory(fileName);
+        fetchHistory(fileName, username);
       }
     }
   }, [fetchTimeStats, stats, fetchHistory, username, history]);
@@ -27,9 +30,9 @@ const MyStats: FC<{ username: string }> = ({ username }) => {
 
   if (!stats || !history) return null;
 
-  const passedHrs = CmdsMethods.totalWorkingHrs(history.children);
-  const taskQuality = CmdsMethods.calcCompleteTasksPercentage(history.children);
-  const quality = CmdsMethods.totalQuality(
+  const passedHrs = totalWorkingHrs(history.children);
+  const taskQuality = calcCompleteTasksPercentage(history.children);
+  const quality = totalQuality(
     history.children,
     stats.sumTimeHrs,
     stats.endTime
@@ -40,13 +43,13 @@ const MyStats: FC<{ username: string }> = ({ username }) => {
         <b>My Stats</b>
       </h2>
       <ul className="flex flex-col">
-        <li>Period: {stats?.endTime}</li>
+        <li>End Journey: {stats.endTime}</li>
         <li>Remain Days: {stats?.remainDays}</li>
         <li>Shared Hrs: {stats?.sumTimeHrs}</li>
         <li>Pass Hrs: {passedHrs}</li>
         <li>Working Hrs Per day: {stats?.perDayWorkingHrs}</li>
         <li>Complete Tasks: {taskQuality}</li>
-        <li>My Quality: {quality}</li>
+        <li>My Quality: {quality}%</li>
       </ul>
     </div>
   );

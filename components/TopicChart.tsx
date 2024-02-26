@@ -55,7 +55,7 @@ const TopicChart: FC<{ topTopic: TopTopicType[] }> = ({ topTopic }) => {
 
   return (
     <div className="w-2/3">
-      <Chart option={option} style={{ width: "100%", height: "500px" }} />
+      <Chart option={option} style={{ width: "100%", height: "100vh" }} />
     </div>
   );
 };

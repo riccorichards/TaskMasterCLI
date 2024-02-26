@@ -1,4 +1,4 @@
-import { StatsStateType } from "@/types/type";
+import { StatsStateType, StatsType } from "@/types/type";
 import { makeRequest } from "@/utils/makeRequest";
 import { create } from "zustand";
 
@@ -12,15 +12,15 @@ export const useStatsStore = create<StatsStore>((set) => ({
   error: null,
   fetchTimeStats: async (username) => {
     set(() => ({ isLoading: true }));
-    try {
-      const stats = await makeRequest(`/api/time-stats/${username}`, "GET");
-      set(() => ({ stats, isLoading: false }));
-    } catch (error) {
+    const response = await makeRequest<StatsType>(
+      `/api/time-stats/${username}`,
+      "GET"
+    );
+    if (response.status === "success") {
+      set(() => ({ stats: response.data, isLoading: false }));
+    } else {
       set(() => ({
-        error:
-          error instanceof Error
-            ? error.message
-            : "An occupated Error: " + error,
+        error: response.message,
         isLoading: false,
       }));
     }

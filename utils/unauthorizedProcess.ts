@@ -1,10 +1,11 @@
 import UserConnection from "@/components/UserConnection";
-import CmdsMethods from "./methods";
+import { Command } from "@/app/page";
+import { responseTextOutput } from "./toolsUtils";
 
-export const unauthorizedProcess = (
+export const unauthorizedProcess = async (
   command: string,
   originalCommand: string
-) => {
+): Promise<Command | void> => {
   const signUpRegax = /^sign up where username =\s*(.+?),\s*password =\s*(.+)$/;
   const loginRegax = /^login -U\s*(.+?)\s*-p\s*(.+)$/;
 
@@ -41,7 +42,7 @@ export const unauthorizedProcess = (
       };
     }
   } else {
-    const res = CmdsMethods.responseTextOutput(originalCommand, "error");
+    const res = responseTextOutput(originalCommand, "error");
     return res;
   }
 };

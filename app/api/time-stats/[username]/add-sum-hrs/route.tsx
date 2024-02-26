@@ -1,17 +1,24 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-export const POST = async (req: NextRequest) => {
+export const PUT = async (
+  req: NextRequest,
+  { params }: { params: { username: string } }
+) => {
   try {
-    const { period, username } = await req.json();
-    const newPeriod = await prisma.timeStats.create({
-      data: { endTime: period, sumTimeHrs: 0, spendMsInTasks: [], username },
+    const { sumTimeHrs } = await req.json();
+    const { username } = params;
+    const updatedTimeManagement = await prisma.timeStats.update({
+      where: { username },
+      data: {
+        sumTimeHrs,
+      },
     });
 
-    if (!newPeriod) {
+    if (!updatedTimeManagement) {
       return new NextResponse(
         JSON.stringify({
-          error: "Error while adding new period",
+          error: "Error while finding time management",
           details: `Data is not available or server issue.`,
         }),
         { status: 404, headers: { "Content-Type": "application/json" } }
@@ -19,7 +26,7 @@ export const POST = async (req: NextRequest) => {
     }
 
     return new NextResponse(
-      JSON.stringify(`Your micro goal will be finished at: ${period}`),
+      JSON.stringify(`Your micro goal will be finished at: ${sumTimeHrs}`),
       { status: 201, headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {

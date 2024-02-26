@@ -3,30 +3,30 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (
   req: NextRequest,
-  { params }: { params: { taskId: string } }
+  { params }: { params: { noteId: string } }
 ) => {
   try {
-    const { taskId } = params;
-    const task = await prisma.dailyTask.findUnique({ where: { id: taskId } });
+    const noteId = parseInt(params.noteId, 10);
+    const note = await prisma.note.findUnique({ where: { id: noteId } });
 
-    if (!task) {
+    if (!note) {
       return new NextResponse(
         JSON.stringify({
-          error: "Task not found",
-          details: `A task with the ID ${taskId} does not exist.`,
+          error: "Note not found",
+          details: `A note with the ID ${noteId} does not exist.`,
         }),
         { status: 404, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    return new NextResponse(JSON.stringify(task), {
+    return new NextResponse(JSON.stringify(note), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
     return new NextResponse(
       JSON.stringify({
-        error: "Failed to create task",
+        error: "Failed to retrieve note",
         details: error instanceof Error ? error.message : "Unknown error",
       }),
       { status: 500, headers: { "Content-Type": "application/json" } }
@@ -36,17 +36,15 @@ export const GET = async (
 
 export const PUT = async (
   req: NextRequest,
-  { params }: { params: { noteId: string } }
+  { params }: { params: { noteId: string; username: string } }
 ) => {
   try {
-    const { title, desc, deadline, complete } = await req.json();
-    const { noteId } = params;
+    const { complete } = await req.json();
+    const { username } = params;
+    const noteId = parseInt(params.noteId, 10);
     const updatedNote = await prisma.note.update({
-      where: { id: noteId },
+      where: { id: noteId, username },
       data: {
-        title,
-        desc,
-        deadline,
         complete,
       },
     });
@@ -78,12 +76,12 @@ export const PUT = async (
 
 export const DELETE = async (
   req: NextRequest,
-  { params }: { params: { noteId: string } }
+  { params }: { params: { noteId: string, username: string } }
 ) => {
   try {
-    const { noteId } = params;
-
-    await prisma.note.delete({ where: { id: noteId } });
+    const noteId = parseInt(params.noteId, 10);
+    const {username} = params
+    await prisma.note.delete({ where: { id: noteId, username } });
 
     return new NextResponse(JSON.stringify("Successfully removed.", null, 2), {
       status: 200,

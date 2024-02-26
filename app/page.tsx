@@ -1,29 +1,16 @@
 "use client";
 
-import Input from "@/components/Input";
-import IntroDetails from "@/components/IntroDetails";
-import MemoizedNewCmd from "@/components/NewCommand";
-import SubmitDoneTask from "@/components/SubmitDoneTask";
-import MemoizedTerminal from "@/components/Terminal";
+const MemoizedNewCmd = React.lazy(() => import("@/components/NewCommand"));
+const IntroDetails = React.lazy(() => import("@/components/IntroDetails"));
+const SubmitDoneTask = React.lazy(() => import("@/components/SubmitDoneTask"));
+const MemoizedTerminal = React.lazy(() => import("@/components/Terminal"));
 import { useAuthStore } from "@/store/AuthStore";
 import { useTimerStore } from "@/store/TimerStore";
+import { ComponentCommand, TextCommand } from "@/types/type";
 import Context from "@/utils/Context";
 import { defineProcess } from "@/utils/defineProcess";
-import CmdsMethods from "@/utils/methods";
-import { useState, useEffect, useRef } from "react";
-
-export type TextCommand = {
-  type: "text";
-  command: string;
-  textOutput: string;
-};
-
-type ComponentCommand = {
-  type: "component";
-  command: string;
-  componentOutput: React.ComponentType<any>;
-  props: any;
-};
+import { isRuntimer } from "@/utils/timerUtils";
+import React, { Suspense, useState, useEffect, useRef } from "react";
 
 export type Command = TextCommand | ComponentCommand;
 
@@ -34,9 +21,9 @@ export default function Home() {
   const [commands, setCommands] = useState<Command[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const isExistRunTimeCmd = useRef<boolean>(false);
-  const { ms, taskTitle } = useTimerStore();
+  const { ms } = useTimerStore();
   const [userFromStorage, setUserFromStorage] = useState<string | null>(null);
-
+  const [runingTaskId, setRunningTaskId] = useState<number | null>(null);
   useEffect(() => {
     const takeUserFromLocalStorage = () => {
       const getUser = localStorage.getItem("CLI-user");
@@ -80,18 +67,17 @@ export default function Home() {
   }, [user, userFromStorage]);
 
   useEffect(() => {
-    if (ms && taskTitle) {
+    if (ms && runingTaskId) {
+      const defineUser = user || userFromStorage;
       const newCommandRespose = {
         type: "component",
-        command: `Beta version/${
-          user || userFromStorage
-        }${terminalPlace}/> completion process...`,
+        command: `Beta version/${defineUser}${terminalPlace}/> completion process...`,
         componentOutput: SubmitDoneTask,
-        props: { ms, taskTitle },
+        props: { ms, taskId: runingTaskId, username: defineUser },
       };
       setCommands((prev) => [...prev, newCommandRespose as Command]);
     }
-  }, [ms, taskTitle, terminalPlace, userFromStorage, user]);
+  }, [ms, terminalPlace, userFromStorage, runingTaskId, user]);
 
   const reset = () => {
     setCommands([]);
@@ -107,11 +93,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    isExistRunTimeCmd.current = CmdsMethods.isRuntimer(
-      "run timer for",
-      commands,
-      "timer"
-    );
+    isExistRunTimeCmd.current = isRuntimer("run timer for", commands, "timer");
   }, [commands]);
 
   const processCommand = async (command: string): Promise<Command | void> => {
@@ -122,6 +104,7 @@ export default function Home() {
       setTerminalPlace,
       terminalPlace,
       isRunTimer: isExistRunTimeCmd.current,
+      setRunningTaskId,
     });
     return outPut;
   };
@@ -135,18 +118,33 @@ export default function Home() {
   };
 
   return (
-    <Context.Provider value={{ removeCommand }}>
+    <Context.Provider
+      value={{
+        removeCommand,
+        runingTaskId,
+        isRunTimer: isExistRunTimeCmd.current,
+      }}
+    >
       <div className="flex flex-col gap-1">
-        {terminalPlace === "/unauthorized" && <IntroDetails />}
-        <MemoizedTerminal commands={commands} inputRef={inputRef} />
-        <MemoizedNewCmd
-          setInput={setInput}
-          handleCommand={handleCommand}
-          terminalPlace={terminalPlace}
-          input={input}
-          commands={commands}
-          userRef={userFromStorage}
-        />
+        {terminalPlace === "/unauthorized" && (
+          <Suspense fallback={<div>Loading...</div>}>
+            <IntroDetails />
+          </Suspense>
+        )}
+        <Suspense fallback={<div>Loading...</div>}>
+          <MemoizedTerminal commands={commands} inputRef={inputRef} />
+        </Suspense>
+        <Suspense fallback={<div>Loading...</div>}>
+          <MemoizedNewCmd
+            setInput={setInput}
+            handleCommand={handleCommand}
+            terminalPlace={terminalPlace}
+            input={input}
+            inputRef={inputRef}
+            commands={commands}
+            userRef={userFromStorage}
+          />
+        </Suspense>
       </div>
     </Context.Provider>
   );

@@ -1,6 +1,6 @@
 import { Command } from "@/app/page";
 import Help from "@/components/Help";
-import CmdsMethods from "./methods";
+import { responseTextOutput } from "./toolsUtils";
 
 interface TerminalOpType {
   originalCommand: string;
@@ -34,7 +34,7 @@ const mainTerminalCmd = ({
         if (confirmReset) {
           return reset();
         }
-        return CmdsMethods.responseTextOutput(
+        return responseTextOutput(
           originalCommand,
           "success",
           "Canceled clear command to avoid resetting the timer."
@@ -64,4 +64,3 @@ const mainTerminalCmd = ({
 };
 
 export default mainTerminalCmd;
-

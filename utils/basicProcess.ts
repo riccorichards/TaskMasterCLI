@@ -1,30 +1,38 @@
-import DailyProgress from "@/components/DailyProgress";
-import CmdsMethods from "./methods";
-import TopTopics from "@/components/TopTopics";
-import MyHistory from "@/components/MyHistory";
-import MyStats from "@/components/MyStats";
-import DayFinish from "@/components/DayFinish";
+const DailyProgress = React.lazy(() => import("@/components/DailyProgress"));
+const TopTopics = React.lazy(() => import("@/components/TopTopics"));
+const MyHistory = React.lazy(() => import("@/components/MyHistory"));
+const MyStats = React.lazy(() => import("@/components/MyStats"));
+const DayFinish = React.lazy(() => import("@/components/DayFinish"));
+const TasksList = React.lazy(() => import("@/components/TasksList"));
+const Notes = React.lazy(() => import("@/components/Notes"));
+
 import mainTerminalCmd from "./mainTerminalCmd";
-import TasksList from "@/components/TasksList";
 import { parametersType } from "./defineProcess";
+import { Command } from "@/app/page";
+import { capitalized, logout, responseTextOutput } from "./toolsUtils";
+import { addTask, editTask, removeTask } from "./taskUtils";
+import { addHrsForPeriod, addPeriod } from "./statsUtils";
+import { addNote, doneNote, removeNote } from "./noteUtils";
+import React from "react";
 
 interface BasicParamsType extends parametersType {
   command: string;
 }
 
-const insertDailyRegax = /^insert daily task set title =\s*(.+),\s*desc =(.+)$/;
+const insertDailyRegax = /^insert daily task title =\s*(.+),\s*desc =(.+)$/;
+const editTaskTitleRegex =
+  /^edit task where id =\s*(.+?)\s*set title =\s*(.+)$/;
+const editTaskDescRegex = /^edit task where id =\s*(.+?)\s*set desc =\s*(.+)$/;
 const editTaskRegex =
   /^edit task where id =\s*(.+?)\s*set title =\s*(.+?),\s*desc =\s*(.+)$/;
-const removeTaskRegax = /^remove task where title =\s*(.+)$/;
+const removeTaskRegax = /^remove task where id =\s*(.+)$/;
 const insertNoteRegax =
   /^insert note title =\s*(.+?),\s*desc =\s*(.+?),\s*deadline =\s*(.+)$/;
-const editNoteRegax =
-  /^edit note where id =\s*(.+?)\s*set title =\s*(.+?),\s*desc =\s*(.+?),\s*deadline =\s*(.+)$/;
 const doneNoteRegax =
-  /^done note where id =\s*(.+?)\s*complete =\s*(true|false)$/;
+  /^done note where id =\s*(.+?)\s*set complete =\s*(true|false)$/;
 const removeNoteRegax = /^remove note where id =\s*(.+)$/;
-const addJourneyDurationRegax = /^insert journey duration:\s*(.+)$/;
-const insertTimeForPerionRegax = /^insert time for period:\s*(.+)$/;
+const addJourneyDurationRegax = /^insert learning duration\s*(.+)$/;
+const insertTimeForPerionRegax = /^insert time for learning duration\s*(.+)$/;
 
 export const basicProcess = async ({
   originalCommand,
@@ -33,31 +41,26 @@ export const basicProcess = async ({
   resetExceptTimerCmds,
   isRunTimer,
   setTerminalPlace,
-}: BasicParamsType) => {
+}: BasicParamsType): Promise<Command | void> => {
   const username = originalCommand.split("/")[1];
 
   if (insertDailyRegax.test(command)) {
     const matched = command.match(insertDailyRegax);
     if (matched) {
       let [, title, desc] = matched;
-      title = CmdsMethods.capitalized(title);
-      desc = CmdsMethods.capitalized(desc);
-      const res = await CmdsMethods.addTask({ username, title, desc });
-      console.log(res);
-      if (res) {
-        return CmdsMethods.responseTextOutput(
+      title = capitalized(title);
+      desc = capitalized(desc);
+      const res = await addTask({ username, title, desc });
+
+      if (res?.status === "success") {
+        return responseTextOutput(
           originalCommand,
           "success",
           "Success: Task was added"
         );
-      } else {
-        return CmdsMethods.responseTextOutput(
-          originalCommand,
-          "error",
-          "",
-          res
-        );
       }
+
+      return responseTextOutput(originalCommand, "error", "", res.message);
     }
   } else if (
     command === "help" ||
@@ -78,46 +81,80 @@ export const basicProcess = async ({
     const matched = command.match(addJourneyDurationRegax);
     if (matched) {
       const [, period] = matched;
-      const res = await CmdsMethods.addPeriod(period, username);
-      if (res)
-        return CmdsMethods.responseTextOutput(
+      const res = await addPeriod({ period, username });
+      if (res.status === "success")
+        return responseTextOutput(
           originalCommand,
           "success",
           "add journey duration!"
         );
 
-      return CmdsMethods.responseTextOutput(originalCommand, "error");
+      return responseTextOutput(originalCommand, "error", "", res.message);
     }
   } else if (insertTimeForPerionRegax.test(command)) {
     const matched = command.match(insertTimeForPerionRegax);
     if (matched) {
       const [, hrs] = matched;
-      const res = await CmdsMethods.addHrsForPeriod({
+      const res = await addHrsForPeriod({
         sumTimeHrs: Number(hrs),
         username,
       });
-      if (res)
-        return CmdsMethods.responseTextOutput(
+      if (res.status === "success")
+        return responseTextOutput(
           originalCommand,
           "success",
           "Period time was added!"
         );
 
-      return CmdsMethods.responseTextOutput(originalCommand, "error");
+      return responseTextOutput(originalCommand, "error", "", res.message);
     }
-  } else if (editTaskRegex.test(command)) {
-    const matched = command.match(editTaskRegex);
-    if (matched) {
-      const [, taskId, title, desc] = matched;
-      const res = await CmdsMethods.editTask({ taskId, title, desc });
-      if (res)
-        return CmdsMethods.responseTextOutput(
+  } else if (
+    editTaskRegex.test(command) ||
+    editTaskDescRegex.test(command) ||
+    editTaskTitleRegex.test(command)
+  ) {
+    const matchedToBoth = editTaskRegex.test(command)
+      ? command.match(editTaskRegex)
+      : null;
+    const matchedToTitle =
+      !matchedToBoth && editTaskTitleRegex.test(command)
+        ? command.match(editTaskTitleRegex)
+        : null;
+    const matchedToDesc =
+      !matchedToBoth && !matchedToTitle && editTaskDescRegex.test(command)
+        ? command.match(editTaskDescRegex)
+        : null;
+
+    let taskId, title, desc;
+
+    if (matchedToBoth) {
+      [, taskId, title, desc] = matchedToBoth;
+    } else if (matchedToTitle) {
+      [, taskId, title] = matchedToTitle;
+      desc = undefined;
+    } else if (matchedToDesc) {
+      [, taskId, desc] = matchedToDesc;
+      title = undefined;
+    }
+
+    if (matchedToBoth || matchedToTitle || matchedToDesc) {
+      taskId = parseInt(taskId || "", 10);
+      const res = await editTask({
+        taskId,
+        title,
+        desc,
+        username,
+      });
+
+      if (res.status === "success") {
+        return responseTextOutput(
           originalCommand,
           "success",
           "Success: updated task!"
         );
-
-      return CmdsMethods.responseTextOutput(originalCommand, "error");
+      } else {
+        return responseTextOutput(originalCommand, "error", "", res.message);
+      }
     }
   } else if (command === "select * from dailyTask") {
     return {
@@ -129,84 +166,70 @@ export const basicProcess = async ({
   } else if (removeTaskRegax.test(command)) {
     const matched = command.match(removeTaskRegax);
     if (matched) {
-      const [, taskName] = matched;
-      const res = await CmdsMethods.removeTask(taskName);
-      if (res)
-        return CmdsMethods.responseTextOutput(
+      const [, taskId] = matched;
+      const res = await removeTask({ taskId, username });
+      if (res.status === "success")
+        return responseTextOutput(
           originalCommand,
           "success",
           "Success: removed record!"
         );
 
-      return CmdsMethods.responseTextOutput(originalCommand, "error");
+      return responseTextOutput(originalCommand, "error", "", res.message);
     }
   } else if (insertNoteRegax.test(command)) {
     const matched = command.match(insertNoteRegax);
     if (matched) {
       const [, title, desc, deadline] = matched;
-      const res = await CmdsMethods.addNote({ title, desc, deadline });
-      if (res)
-        return CmdsMethods.responseTextOutput(
+
+      const res = await addNote({ title, desc, deadline, username });
+      if (res.status === "success")
+        return responseTextOutput(
           originalCommand,
           "success",
-          "Success: Note was added!"
+          "Note was added!"
         );
 
-      return CmdsMethods.responseTextOutput(originalCommand, "error");
-    }
-  } else if (editNoteRegax.test(command)) {
-    const matched = command.match(editNoteRegax);
-    if (matched) {
-      const [, noteId, title, desc, deadline] = matched;
-      const res = await CmdsMethods.editNote({
-        noteId,
-        title,
-        desc,
-        deadline,
-      });
-      if (res)
-        return CmdsMethods.responseTextOutput(
-          originalCommand,
-          "success",
-          "Success: updated note!"
-        );
-
-      return CmdsMethods.responseTextOutput(originalCommand, "error");
+      return responseTextOutput(originalCommand, "error", "", res.message);
     }
   } else if (doneNoteRegax.test(command)) {
     const matched = command.match(doneNoteRegax);
     if (matched) {
       const [, noteId, complete] = matched;
-      const res = await CmdsMethods.doneNote({
+      const res = await doneNote({
         noteId,
         complete: Boolean(complete),
+        username,
       });
-      if (res)
-        return CmdsMethods.responseTextOutput(
+      if (res.status === "success")
+        return responseTextOutput(
           originalCommand,
           "success",
-          "Success: note is finished!"
+          "note is finished!"
         );
 
-      return CmdsMethods.responseTextOutput(originalCommand, "error");
+      return responseTextOutput(originalCommand, "error", "", res.message);
     }
   } else if (removeNoteRegax.test(command)) {
     const matched = command.match(removeNoteRegax);
     if (matched) {
       const [, noteId] = matched;
-      const res = await CmdsMethods.removeNote(noteId);
-      if (res)
-        return CmdsMethods.responseTextOutput(
-          originalCommand,
-          "success",
-          "Success: removed note!"
-        );
+      const res = await removeNote(noteId, username);
+      if (res.status === "success")
+        return responseTextOutput(originalCommand, "success", "removed note!");
 
-      return CmdsMethods.responseTextOutput(originalCommand, "error");
+      return responseTextOutput(originalCommand, "error", "", res.message);
     }
+  } else if (command === "select * from note") {
+    return {
+      type: "component",
+      command: originalCommand,
+      componentOutput: Notes,
+      props: { username },
+    };
   } else if (command === "/c timer" || command === "/c tree") {
     const area = command.split("/c")[1];
-    const res = CmdsMethods.responseTextOutput(
+    const res = responseTextOutput(
       originalCommand,
       "success",
       `Transfer: To >>>${area}`
@@ -232,7 +255,7 @@ export const basicProcess = async ({
       type: "component",
       command: originalCommand,
       componentOutput: MyHistory,
-      props: { fileName },
+      props: { fileName, username },
     };
   } else if (command === "top learned topics") {
     const fileName = "history-ricco.json";
@@ -240,28 +263,35 @@ export const basicProcess = async ({
       type: "component",
       command: originalCommand,
       componentOutput: TopTopics,
-      props: { fileName },
+      props: { fileName, username },
     };
-  } else if (command === "top learned topics - chart") {
+  } else if (command === "top learned topics with chart") {
     const fileName = "history-ricco.json";
     return {
       type: "component",
       command: originalCommand,
       componentOutput: TopTopics,
-      props: { fileName, chart: true },
+      props: { fileName, chart: true, username },
     };
   } else if (command === "daily result") {
-    const fileName = "history-ricco.json";
+    const fileName = `history-${username}.json`;
     return {
       type: "component",
       command: originalCommand,
       componentOutput: DailyProgress,
-      props: { fileName },
+      props: { fileName, username },
+    };
+  } else if (command === "daily result with chart") {
+    const fileName = `history-${username}.json`;
+    return {
+      type: "component",
+      command: originalCommand,
+      componentOutput: DailyProgress,
+      props: { fileName, username, chart: true },
     };
   } else if (command === "quit") {
-    return CmdsMethods.logout();
+    return logout();
   } else {
-    const res = CmdsMethods.responseTextOutput(originalCommand, "error");
-    return res;
+    return responseTextOutput(originalCommand, "error");
   }
 };

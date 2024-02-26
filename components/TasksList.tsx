@@ -1,5 +1,5 @@
 import { useTaskStore } from "@/store/TaskStore";
-import { FC, use, useEffect } from "react";
+import { FC, useEffect } from "react";
 import Task from "./Task";
 
 const TasksList: FC<{ username: string }> = ({ username }) => {

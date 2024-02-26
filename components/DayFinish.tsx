@@ -3,7 +3,7 @@
 import { useTaskStore } from "@/store/TaskStore";
 import { FC, useEffect, useState } from "react";
 import Task from "./Task";
-import CmdsMethods from "@/utils/methods";
+import { calcCompleteTasksPercentage } from "@/utils/statsUtils";
 
 const DayFinish: FC<{ username: string }> = ({ username }) => {
   const {
@@ -25,7 +25,7 @@ const DayFinish: FC<{ username: string }> = ({ username }) => {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
-  const result = CmdsMethods.calcCompleteTasksPercentage(tasks);
+  const result = calcCompleteTasksPercentage(tasks);
 
   const handleReject = () => {
     const rejectConf = window.confirm("Are you sure you want to continue?");
@@ -36,7 +36,7 @@ const DayFinish: FC<{ username: string }> = ({ username }) => {
 
   const handleApply = () => {
     if (tasks.length > 0) {
-      addTasksToHistory(tasks);
+      addTasksToHistory(username, tasks);
       setIsOpenBtns(false);
     }
   };

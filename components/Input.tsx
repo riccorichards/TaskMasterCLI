@@ -1,13 +1,14 @@
 "use client";
 
 import { Command } from "@/app/page";
-import React, { FC, useEffect, useRef, useState } from "react";
+import React, { FC, useEffect } from "react";
 
 export interface InputProps {
   input: string;
   setInput: (value: string) => void;
   handleCommand: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   commands: Command[];
+  inputRef: React.RefObject<HTMLInputElement>;
 }
 
 const Input: FC<InputProps> = ({
@@ -15,9 +16,8 @@ const Input: FC<InputProps> = ({
   setInput,
   handleCommand,
   commands,
+  inputRef,
 }) => {
-  const inputRef = useRef<HTMLInputElement>(null);
-  
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
@@ -28,7 +28,6 @@ const Input: FC<InputProps> = ({
     setInput(e.target.value);
   };
 
- 
   return (
     <input
       ref={inputRef}

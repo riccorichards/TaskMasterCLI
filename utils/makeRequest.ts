@@ -1,17 +1,19 @@
-import axios, { AxiosError, Method } from "axios";
+import axios, { Method } from "axios";
+import { ApiResponse } from "@/types/type";
 
-export const makeRequest = async (
+export async function makeRequest<T>(
   url: string,
   method: Method = "GET",
   data?: any
-) => {
+): Promise<ApiResponse<T>> {
   try {
-    const response = await axios({ url, method, data });
-    return response.data;
+    const response = await axios({ url, method, data, responseType: "json" });
+    return { status: "success", data: response.data };
   } catch (error) {
-    if (error instanceof AxiosError) {
-      throw new Error(error.message);
+    let message = "An unexpected error occurred";
+    if (axios.isAxiosError(error)) {
+      message = error.response?.data?.message || error.message || message;
     }
-    console.log(error);
+    return { status: "error", message };
   }
-};
+}

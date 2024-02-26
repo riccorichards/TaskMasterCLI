@@ -1,6 +1,6 @@
 import { useTimerStore } from "@/store/TimerStore";
 import Context from "@/utils/Context";
-import CmdsMethods from "@/utils/methods";
+import { formatDuration } from "@/utils/timerUtils";
 import React, { FC, useContext, useEffect, useRef, useState } from "react";
 
 const Timer: FC<{ title: string }> = ({ title }) => {
@@ -23,7 +23,7 @@ const Timer: FC<{ title: string }> = ({ title }) => {
         elapsedRef.current =
           now - startTimeRef.current - totalPausedTimeRef.current;
         const secondsElapsed = Math.floor(elapsedRef.current / 1000);
-        setDisplayTime(CmdsMethods.formatDuration(secondsElapsed));
+        setDisplayTime(formatDuration(secondsElapsed));
         frameRef.current = requestAnimationFrame(animate);
       }
     };

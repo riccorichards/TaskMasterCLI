@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { findFileByFileName } from "../get-map-tree/[fileName]/route";
 import path from "path";
 import fs from "fs";
+import { findFileByFileName } from "@/utils/fileUtils";
 
 interface TreeNode {
   name: string;

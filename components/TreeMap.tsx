@@ -1,4 +1,4 @@
-import CmdsMethods from "@/utils/methods";
+import { retrieveFile } from "@/utils/treeUtils";
 import RoadMapEchart from "echarts-for-react";
 import { useEffect, useState } from "react";
 
@@ -8,7 +8,7 @@ const TreeMap = () => {
   const handleRetrieveFile = async () => {
     const fileName = "mapTree-ricco.json";
     try {
-      const res = await CmdsMethods.retrieveFile(fileName);
+      const res = await retrieveFile(fileName);
 
       if (res) setMapTree(res);
     } catch (error) {

@@ -2,48 +2,46 @@
 
 import { useTaskStore } from "@/store/TaskStore";
 import { useTimerStore } from "@/store/TimerStore";
+import { formatDuration } from "@/utils/timerUtils";
 import { FC, useEffect, useState } from "react";
 
-const SubmitDoneTask: FC<{ ms: number; taskTitle: string }> = ({
-  ms,
-  taskTitle,
-}) => {
-  const { fetchTaskByItsName, isLoading, error, task } = useTaskStore();
+const SubmitDoneTask: FC<{
+  ms: number;
+  taskTitle: string;
+  taskId: string;
+  username: string;
+}> = ({ ms, taskId, username }) => {
+  const { fetchTaskById, isLoading, error, task } = useTaskStore();
   const { sendDoneTaskInfo } = useTimerStore();
   const [done, setDone] = useState<boolean>(false);
   const [response, setResponse] = useState<string | undefined>(undefined);
   useEffect(() => {
-    fetchTaskByItsName(taskTitle);
-  }, [taskTitle, fetchTaskByItsName]);
+    fetchTaskById(taskId, username);
+  }, [taskId, fetchTaskById, username]);
 
   if (isLoading) return <div>Loaging...</div>;
   if (error) return <div>Error: {error}</div>;
 
   const handleSubmit = async () => {
+    const taskInfo = {
+      taskId,
+      spendMs: ms,
+      done,
+    };
     if (!done) {
       const confirmDone = window.confirm(
         "Are you sure you want to mark task as a failed?"
       );
       if (confirmDone) {
-        const taskInfo = {
-          title: taskTitle,
-          spendMs: ms,
-          done,
-        };
-        const res = await sendDoneTaskInfo(taskInfo);
-
+        const res = await sendDoneTaskInfo(taskInfo, username);
+        console.log({ res, note: "sendDoneTaskInfo" });
         return setResponse(res);
       } else {
         return;
       }
     }
 
-    const taskInfo = {
-      title: taskTitle,
-      spendMs: ms,
-      done,
-    };
-    const res = await sendDoneTaskInfo(taskInfo);
+    const res = await sendDoneTaskInfo(taskInfo, username);
 
     setResponse(res);
   };
@@ -54,7 +52,7 @@ const SubmitDoneTask: FC<{ ms: number; taskTitle: string }> = ({
           {" "}
           <div>Task title: {task?.title}</div>
           <div>Desctription: {task?.desc}</div>
-          <div>Milliseconds: {ms}</div>
+          <div>Milliseconds: {formatDuration(Math.floor(ms / 1000))}</div>
           <span>
             <i>
               Default value of status is not yet... so you need to click{" "}

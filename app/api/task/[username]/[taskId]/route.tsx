@@ -3,21 +3,21 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (
   req: NextRequest,
-  { params }: { params: { taskName: string } }
+  { params }: { params: { taskId: string; username: string } }
 ) => {
   try {
-    const { taskName } = params;
-    const decodedTaskName = decodeURIComponent(taskName);
+    const taskId = parseInt(params.taskId, 10);
+    const { username } = params;
 
     const task = await prisma.dailyTask.findUnique({
-      where: { title: decodedTaskName },
+      where: { id: taskId, username },
     });
 
     if (!task) {
       return new NextResponse(
         JSON.stringify({
           error: "Task not found",
-          details: `A task with the provided title: ${taskName} does not exist.`,
+          details: `A task with the provided title: ${taskId} does not exist.`,
         }),
         { status: 404, headers: { "Content-Type": "application/json" } }
       );
@@ -40,24 +40,24 @@ export const GET = async (
 
 export const PUT = async (
   req: NextRequest,
-  { params }: { params: { taskName: string } }
+  { params }: { params: { taskId: string; username: string } }
 ) => {
   try {
     const { title, desc, done, spendMs } = await req.json();
-    const { taskName } = params;
-
+    const taskId = parseInt(params.taskId, 10);
+    const { username } = params;
     let updatedTask;
-    if (title && desc) {
+    if (title || desc) {
       updatedTask = await prisma.dailyTask.update({
-        where: { title: taskName },
+        where: { id: taskId, username },
         data: {
-          title,
-          desc,
+          title: title ? title : undefined,
+          desc: desc ? desc : undefined,
         },
       });
     } else {
       updatedTask = await prisma.dailyTask.update({
-        where: { title: taskName },
+        where: { id: taskId, username },
         data: {
           done,
           spendMs,
@@ -92,11 +92,16 @@ export const PUT = async (
 
 export const DELETE = async (
   req: NextRequest,
-  { params }: { params: { taskName: string } }
+  {
+    params,
+  }: {
+    params: { taskId: string; username: string };
+  }
 ) => {
   try {
-    const { taskName } = params;
-    await prisma.dailyTask.delete({ where: { title: taskName } });
+    const taskId = parseInt(params.taskId, 10);
+    const { username } = params;
+    await prisma.dailyTask.delete({ where: { id: taskId, username } });
 
     return new NextResponse(JSON.stringify("Successfully removed.", null, 2), {
       status: 200,

@@ -1,26 +1,27 @@
 import { useTaskStore } from "@/store/TaskStore";
-import CmdsMethods from "@/utils/methods";
 import { FC, useEffect, useState } from "react";
 import TopicChart from "./TopicChart";
 import { TopTopicType } from "@/types/type";
+import { toplearnedTopics } from "@/utils/statsUtils";
 
-export const TopTopics: FC<{ fileName: string; chart: boolean }> = ({
-  fileName,
-  chart = false,
-}) => {
+export const TopTopics: FC<{
+  fileName: string;
+  chart: boolean;
+  username: string;
+}> = ({ fileName, chart = false, username }) => {
   const { history, isLoading, error, fetchHistory } = useTaskStore();
   const [topTopics, setTopTopics] = useState<TopTopicType[] | null>(null);
   useEffect(() => {
     if (fileName) {
       if (!history) {
-        fetchHistory(fileName);
+        fetchHistory(fileName, username);
       }
     }
-  }, [fileName, history, fetchHistory]);
+  }, [fileName, history, fetchHistory, username]);
 
   useEffect(() => {
     if (history) {
-      setTopTopics(CmdsMethods.toplearnedTopics(history.children));
+      setTopTopics(toplearnedTopics(history.children));
     }
   }, [history]);
   if (isLoading) return <div>Loading...</div>;

@@ -1,20 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import fs from "fs/promises";
-
-export async function findFileByFileName(dir: string, fileName: string) {
-  try {
-    const files = await fs.readdir(dir);
-
-    const file = files.find((f) => f.includes(fileName));
-    return file
-      ? path.join(dir, file)
-      : `File was not found with provided: ${fileName}`;
-  } catch (error) {
-    console.error("Error finding file by name:", error);
-    return false;
-  }
-}
+import { findFileByFileName } from "@/utils/fileUtils";
 
 export const GET = async (
   req: NextRequest,

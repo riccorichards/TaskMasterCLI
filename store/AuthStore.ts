@@ -13,30 +13,28 @@ export const useAuthStore = create<LoginStore>((set) => ({
   error: null,
   signup: async (input) => {
     set(() => ({ isLoading: true }));
-    try {
-      const user = await makeRequest("/api/auth", "POST", input);
-      set(() => ({ user, isLoading: false }));
-    } catch (error) {
+    const response = await makeRequest<string>("/api/auth", "POST", input);
+    if (response.status === "success") {
+      set(() => ({ user: response.data, isLoading: false }));
+    } else {
       set(() => ({
-        error:
-          error instanceof Error
-            ? error.message
-            : "An occupated Error: " + error,
+        error: response.message,
         isLoading: false,
       }));
     }
   },
   logIn: async (input) => {
     set(() => ({ isLoading: true }));
-    try {
-      const user = await makeRequest("/api/auth/login", "POST", input);
-      set(() => ({ user, isLoading: false }));
-    } catch (error) {
+    const response = await makeRequest<string>(
+      "/api/auth/login",
+      "POST",
+      input
+    );
+    if (response.status === "success") {
+      set(() => ({ user: response.data, isLoading: false }));
+    } else {
       set(() => ({
-        error:
-          error instanceof Error
-            ? error.message
-            : "An accupated Error: " + error,
+        error: response.message,
         isLoading: false,
       }));
     }

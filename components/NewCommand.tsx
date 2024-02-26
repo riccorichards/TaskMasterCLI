@@ -15,6 +15,7 @@ const NewCommand: FC<NewCommandType> = ({
   commands,
   terminalPlace,
   userRef,
+  inputRef,
 }) => {
   const { user } = useAuthStore();
   return (
@@ -26,6 +27,7 @@ const NewCommand: FC<NewCommandType> = ({
       </span>{" "}
       <Input
         input={input}
+        inputRef={inputRef}
         setInput={setInput}
         handleCommand={handleCommand}
         commands={commands}

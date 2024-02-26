@@ -1,17 +1,20 @@
 "use client";
 
 import { useTaskStore } from "@/store/TaskStore";
-import CmdsMethods from "@/utils/methods";
+import { formatDuration } from "@/utils/timerUtils";
 import { FC, useEffect } from "react";
 
-const MyHistory: FC<{ fileName: string }> = ({ fileName }) => {
+const MyHistory: FC<{ fileName: string; username: string }> = ({
+  fileName,
+  username,
+}) => {
   const { history, isLoading, error, fetchHistory } = useTaskStore();
 
   useEffect(() => {
     if (fileName) {
-      fetchHistory(fileName);
+      fetchHistory(fileName, username);
     }
-  }, [fileName, fetchHistory]);
+  }, [fileName, fetchHistory, username]);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -38,7 +41,7 @@ const MyHistory: FC<{ fileName: string }> = ({ fileName }) => {
             <span className="flex flex-1 self-center">{el.workSpace}</span>
             <span className="flex flex-1 self-center">{el.task}</span>
             <span className="flex flex-1 self-center">
-              {CmdsMethods.formatDuration(el.duration)}
+              {formatDuration(el.duration)}
             </span>
             <span className="flex flex-1 self-center">
               {el.done ? "True" : "False"}

@@ -1,5 +1,5 @@
 import { Command } from "@/app/page";
-import React, { FC, useEffect } from "react";
+import React, { Suspense, FC, useEffect } from "react";
 
 const Terminal: FC<{
   commands: Command[];
@@ -8,7 +8,7 @@ const Terminal: FC<{
   useEffect(() => {
     const inputElement = inputRef.current;
     if (inputElement) {
-      const { bottom } = inputElement?.getBoundingClientRect();
+      const { bottom } = inputElement.getBoundingClientRect();
       const viewportY = window.innerHeight;
 
       if (viewportY - bottom < 50) {
@@ -27,9 +27,13 @@ const Terminal: FC<{
               cmd.textOutput
             ) : cmd.type === "component" ? (
               cmd.props ? (
-                <cmd.componentOutput {...cmd.props} />
+                <Suspense fallback={<div>Loading...</div>}>
+                  <cmd.componentOutput {...cmd.props} />
+                </Suspense>
               ) : (
-                <cmd.componentOutput />
+                <Suspense fallback={<div>Loading...</div>}>
+                  <cmd.componentOutput />
+                </Suspense>
               )
             ) : null}
           </div>

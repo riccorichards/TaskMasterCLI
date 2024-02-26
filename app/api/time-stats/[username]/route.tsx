@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import CmdsMethods from "@/utils/methods";
+import { defineRemainDays } from "@/utils/statsUtils";
+import { formatingDate } from "@/utils/toolsUtils";
 import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (
@@ -24,12 +25,17 @@ export const GET = async (
 
     const { endTime, sumTimeHrs } = stats;
 
-    const remainDays = CmdsMethods.defineRemainDays(endTime);
+    const remainDays = defineRemainDays(endTime);
     const perDayWorkingHrs = sumTimeHrs / remainDays;
 
     return new NextResponse(
       JSON.stringify(
-        { endTime: CmdsMethods.formatingDate(endTime).date, sumTimeHrs, remainDays, perDayWorkingHrs },
+        {
+          endTime: formatingDate(endTime).date,
+          sumTimeHrs,
+          remainDays,
+          perDayWorkingHrs,
+        },
         null,
         2
       ),

@@ -1,14 +1,19 @@
-import { findFileByFileName } from "@/app/api/map-tree/get-map-tree/[fileName]/route";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import fs from "fs/promises";
-import { DailyTastType } from "@/types/type";
+import { DailyTaskType } from "@/types/type";
 import { prisma } from "@/lib/prisma";
+import { findFileByFileName } from "@/utils/fileUtils";
 
-export const POST = async (req: NextRequest) => {
+export const POST = async (
+  req: NextRequest,
+  { params }: { params: { username: string } }
+) => {
   try {
     const body = await req.json();
     const { tasks } = body;
+    const { username } = params;
+
     if (!Array.isArray(tasks) || tasks.length === 0) {
       return new NextResponse(
         JSON.stringify({
@@ -20,7 +25,7 @@ export const POST = async (req: NextRequest) => {
     }
 
     const dir = path.join(process.cwd(), "tempCont", "history");
-    const fileName = `history-${tasks[0].username}.json`;
+    const fileName = `history-${username}.json`;
     const filePath = await findFileByFileName(dir, fileName);
 
     if (!filePath) {
@@ -40,7 +45,7 @@ export const POST = async (req: NextRequest) => {
       historyFile.children = [];
     }
 
-    tasks.forEach((task: DailyTastType) => {
+    tasks.forEach((task: DailyTaskType) => {
       const { title, desc, done, spendMs } = task;
       historyFile.children.push({
         workSpace: title,
@@ -54,8 +59,8 @@ export const POST = async (req: NextRequest) => {
     await fs.writeFile(filePath, JSON.stringify(historyFile, null, 2), "utf8");
 
     const deletePromises = tasks.map(
-      async (task: DailyTastType) =>
-        await prisma.dailyTask.delete({ where: { title: task.title } })
+      async (task: DailyTaskType) =>
+        await prisma.dailyTask.delete({ where: { id: task.id } })
     );
     await Promise.all(deletePromises);
 

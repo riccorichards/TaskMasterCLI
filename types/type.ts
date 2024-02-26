@@ -1,6 +1,45 @@
+export type TextCommand = {
+  type: "text";
+  command: string;
+  textOutput: string;
+};
+
+export type ComponentCommand = {
+  type: "component";
+  command: string;
+  componentOutput: React.ComponentType<any>;
+  props: any;
+};
+
 export interface MapTreeType {
   name: string;
   children: [];
+}
+
+export interface InsertTaskType {
+  username: string;
+  title: string;
+  desc: string;
+}
+
+export interface InsertNoteType {
+  title: string;
+  desc: string;
+  deadline: string;
+  username: string;
+}
+
+export interface EditTaskType {
+  username: string;
+  title: string | undefined;
+  desc: string | undefined;
+  taskId: number;
+}
+
+export interface ApiResponse<T> {
+  status: "success" | "error";
+  data?: T;
+  message?: string;
 }
 
 export interface RootMapTreeType {
@@ -11,8 +50,8 @@ export interface RootMapTreeType {
   };
 }
 
-export interface DailyTastType {
-  id: string;
+export interface DailyTaskType {
+  id: number;
   title: string;
   desc: string;
   done: boolean;
@@ -27,6 +66,15 @@ export interface HistoryTastType {
   done: boolean;
   duration: number;
   createdAt: number;
+}
+
+export interface NotesType {
+  id: number;
+  title: string;
+  desc: string;
+  deadline: string;
+  complete: boolean;
+  createdAt: string;
 }
 
 export interface HistoryType {
@@ -46,9 +94,10 @@ export interface LoginStateType {
 }
 
 export interface TaskStateType {
-  tasks: DailyTastType[];
-  task: DailyTastType | null;
+  tasks: DailyTaskType[];
+  task: DailyTaskType | null;
   history: HistoryType | null;
+  notes: NotesType[];
   historyResponse: string | null;
   isLoading: boolean;
   error: string | null;
@@ -77,7 +126,7 @@ export interface StatsStateType {
 
 export interface DoneTaskType {
   spendMs: number;
-  title: string;
+  taskId: string;
   done: boolean;
 }
 
