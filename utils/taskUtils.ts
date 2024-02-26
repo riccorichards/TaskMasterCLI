@@ -14,7 +14,7 @@ export async function addTask({
   desc,
 }: InsertTaskType): Promise<ApiResponse<InsertTaskType>> {
   return await makeRequest<InsertTaskType>(
-    `/api/task/${username}create-task`,
+    `/api/task/${username}/create-task`,
     "POST",
     {
       title,
