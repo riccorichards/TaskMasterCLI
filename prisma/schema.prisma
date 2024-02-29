@@ -42,3 +42,4 @@ model Note {
   complete Boolean @default(false)
   createdAt DateTime @default(now())
 }
+

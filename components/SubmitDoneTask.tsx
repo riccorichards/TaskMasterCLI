@@ -34,7 +34,6 @@ const SubmitDoneTask: FC<{
       );
       if (confirmDone) {
         const res = await sendDoneTaskInfo(taskInfo, username);
-        console.log({ res, note: "sendDoneTaskInfo" });
         return setResponse(res);
       } else {
         return;

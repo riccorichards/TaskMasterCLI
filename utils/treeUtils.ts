@@ -1,84 +1,63 @@
 import { makeRequest } from "./makeRequest";
-import {
-  ApiResponse,
-  MapTreeType,
-  RootMapTreeType,
-  TreeNode,
-} from "@/types/type";
-import { capitalized, errorhandler } from "./toolsUtils";
+import { ApiResponse, RootMapTreeType, TreeNode } from "@/types/type";
+import { capitalized } from "./toolsUtils";
+import { NodeDocument, NodeInput } from "@/model/type";
+import NodeDocs from "@/model/NodeTree";
 
 export async function insertMainNode({
-  mainNode,
+  node,
   username,
-}: {
-  mainNode: string;
-  username: string;
-}): Promise<
-  ApiResponse<{
-    mainNode: string;
-    username: string;
-  }>
-> {
-  const mainGoal = capitalized(mainNode);
-
-  const mapTree: RootMapTreeType = {
-    user: username,
-    userTree: {
-      name: mainGoal,
-      children: [],
-    },
-  };
-  const fileName = `mapTree-${username}.json`;
-
-  return await makeRequest(`/api/map-tree/${fileName}/main-node`, "POST", {
-    mapTree,
+}: NodeInput): Promise<ApiResponse<NodeInput>> {
+  return await makeRequest(`/api/map-tree/${username}/main-node`, "POST", {
+    node: capitalized(node),
   });
 }
 
 export async function retrieveFile(
-  fileName: string
-): Promise<ApiResponse<RootMapTreeType>> {
-  return await makeRequest(`/api/map-tree/${fileName}`, "GET");
+  username: string
+): Promise<ApiResponse<NodeInput>> {
+  return await makeRequest(`/api/map-tree/${username}`, "GET");
 }
 
 export async function insertChildToNode({
-  nodeName,
-  childName,
-  fileName,
-}: {
-  nodeName: string;
-  childName: string;
-  fileName: string;
-}): Promise<ApiResponse<RootMapTreeType>> {
-  const newNodeName = capitalized(childName);
-
-  const newNode: MapTreeType = {
-    name: newNodeName,
-    children: [],
-  };
-
-  return await makeRequest(`/api/map-tree/${fileName}/sub-node`, "POST", {
-    nodeName: capitalized(nodeName),
-    newNode,
+  path,
+  node,
+  username,
+}: NodeInput): Promise<ApiResponse<NodeInput>> {
+  return await makeRequest(`/api/map-tree/${username}/sub-node`, "POST", {
+    path: capitalized(path || ""),
+    node: capitalized(node),
   });
 }
 
-export async function updateNodeInTree({
-  fileName,
-  nodeName,
-  method,
-  updatedNodeName,
-}: {
-  fileName: string;
-  nodeName: string;
+export interface NodeTypeForUpdate {
+  username: string;
+  node: string;
   method: string;
   updatedNodeName?: string;
-}): Promise<ApiResponse<RootMapTreeType>> {
-  return await makeRequest(`/api/map-tree/${fileName}/sub-node`, "PUT", {
-    nodeName,
+}
+
+export async function updateNodeInTree({
+  username,
+  node,
+  method,
+  updatedNodeName,
+}: NodeTypeForUpdate): Promise<ApiResponse<RootMapTreeType>> {
+  const Update = updatedNodeName ? capitalized(updatedNodeName) : undefined;
+  return await makeRequest(`/api/map-tree/${username}/sub-node`, "PUT", {
+    node: capitalized(node),
     method,
-    updatedNodeName,
+    updatedNodeName: Update,
   });
+}
+
+export function defineAbsolutePath(nodes: NodeDocument[], path: string) {
+  const findNode = nodes.find((node) => node.node === path);
+
+  if (!findNode) return false;
+
+  const newPath = findNode.path + `${findNode.node}` + "/";
+  return newPath;
 }
 
 export const addNodeToTree = (

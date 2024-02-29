@@ -19,8 +19,7 @@ const MyStats: FC<{ username: string }> = ({ username }) => {
         fetchTimeStats(username);
       }
       if (!history) {
-        const fileName = `history-${username}.json`;
-        fetchHistory(fileName, username);
+        fetchHistory(username);
       }
     }
   }, [fetchTimeStats, stats, fetchHistory, username, history]);
@@ -30,13 +29,14 @@ const MyStats: FC<{ username: string }> = ({ username }) => {
 
   if (!stats || !history) return null;
 
-  const passedHrs = totalWorkingHrs(history.children);
-  const taskQuality = calcCompleteTasksPercentage(history.children);
+  const passedHrs = totalWorkingHrs(history.myHistory);
+  const taskQuality = calcCompleteTasksPercentage(history.myHistory);
   const quality = totalQuality(
-    history.children,
+    history.myHistory,
     stats.sumTimeHrs,
     stats.endTime
   );
+
   return (
     <div className="flex flex-col gap-2">
       <h2>
@@ -48,7 +48,7 @@ const MyStats: FC<{ username: string }> = ({ username }) => {
         <li>Shared Hrs: {stats?.sumTimeHrs}</li>
         <li>Pass Hrs: {passedHrs}</li>
         <li>Working Hrs Per day: {stats?.perDayWorkingHrs}</li>
-        <li>Complete Tasks: {taskQuality}</li>
+        <li>Complete Tasks: {taskQuality}%</li>
         <li>My Quality: {quality}%</li>
       </ul>
     </div>

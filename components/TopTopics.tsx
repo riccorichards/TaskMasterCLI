@@ -5,23 +5,22 @@ import { TopTopicType } from "@/types/type";
 import { toplearnedTopics } from "@/utils/statsUtils";
 
 export const TopTopics: FC<{
-  fileName: string;
   chart: boolean;
   username: string;
-}> = ({ fileName, chart = false, username }) => {
+}> = ({ chart = false, username }) => {
   const { history, isLoading, error, fetchHistory } = useTaskStore();
   const [topTopics, setTopTopics] = useState<TopTopicType[] | null>(null);
   useEffect(() => {
-    if (fileName) {
+    if (username) {
       if (!history) {
-        fetchHistory(fileName, username);
+        fetchHistory(username);
       }
     }
-  }, [fileName, history, fetchHistory, username]);
+  }, [history, fetchHistory, username]);
 
   useEffect(() => {
     if (history) {
-      setTopTopics(toplearnedTopics(history.children));
+      setTopTopics(toplearnedTopics(history.myHistory));
     }
   }, [history]);
   if (isLoading) return <div>Loading...</div>;

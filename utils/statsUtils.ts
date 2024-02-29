@@ -37,6 +37,20 @@ export async function addHrsForPeriod({
     username,
   });
 }
+export async function updatePeriodDuration({
+  username,
+  period,
+  sumTimeHrs,
+}: {
+  username: string;
+  period: string;
+  sumTimeHrs: number;
+}): Promise<ApiResponse<string>> {
+  return await makeRequest(`/api/time-stats/${username}`, "PUT", {
+    period: new Date(period),
+    sumTimeHrs,
+  });
+}
 
 export function calcCompleteTasksPercentage(
   tasks: HistoryTastType[] | DailyTaskType[]
@@ -88,7 +102,9 @@ export function totalQuality(
 }
 
 export function totalWorkingHrs(tasks: HistoryTastType[]) {
-  return formatDuration(tasks.reduce((acc, task) => acc + task.duration, 0));
+  const sumHrs = tasks.reduce((acc, task) => acc + task.duration, 0);
+  console.log({ sumHrs });
+  return formatDuration(sumHrs / 1000);
 }
 
 export function toplearnedTopics(tasks: HistoryTastType[]) {
@@ -133,4 +149,10 @@ export function dailyProgress(tasks: HistoryTastType[]) {
   });
 
   return result;
+}
+
+export function validateDate(dateString: string) {
+  const validPeriodFormat =
+    /^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
+  return validPeriodFormat.test(dateString);
 }

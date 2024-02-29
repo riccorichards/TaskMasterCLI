@@ -14,7 +14,7 @@ interface TaskStore extends TaskStateType {
     username: string,
     tasks: DailyTaskType[]
   ) => Promise<void>;
-  fetchHistory: (username: string, fileName: string) => Promise<void>;
+  fetchHistory: (username: string) => Promise<void>;
   fetchNotes: (username: string) => Promise<void>;
 }
 
@@ -76,10 +76,10 @@ export const useTaskStore = create<TaskStore>((set) => ({
       }));
     }
   },
-  fetchHistory: async (username, fileName) => {
+  fetchHistory: async (username) => {
     set(() => ({ isLoading: true }));
     const response = await makeRequest<HistoryType>(
-      `/api/task/${username}/history/${fileName}`,
+      `/api/task/${username}/history`,
       "GET"
     );
     if (response.status === "success") {

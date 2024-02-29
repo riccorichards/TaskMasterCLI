@@ -30,6 +30,12 @@ export const existingCmds = [
     area: "stats",
   },
   {
+    id: 50,
+    cmd: "update learning duration for -U [Username] set [20XX-12-01], hours = [new Time]",
+    desc: "Update already existing period information.",
+    area: "stats",
+  },
+  {
     id: 6,
     cmd: "daily result with chart",
     desc: "Show a chart of daily results.",
@@ -84,12 +90,6 @@ export const existingCmds = [
     area: "task",
   },
   {
-    id: 17,
-    cmd: "edit note where id = [NoteId] set title = [New Title], desc [New desc], deadline = [New Deadline]",
-    desc: "Edit the content of an existing note by its title.",
-    area: "task",
-  },
-  {
     id: 18,
     cmd: "remove note where id = [NoteId]",
     desc: "Remove an existing note by its ID.",
@@ -97,7 +97,13 @@ export const existingCmds = [
   },
   {
     id: 19,
-    cmd: "done note where id = [NoteId] complete = [Boolean]",
+    cmd: "done note where id = [NoteId] set complete = [Boolean]",
+    desc: "Mark a note as completed by its ID.",
+    area: "task",
+  },
+  {
+    id: 190,
+    cmd: "select * from note",
     desc: "Mark a note as completed by its ID.",
     area: "task",
   },
@@ -153,12 +159,6 @@ export const existingCmds = [
     id: 29,
     cmd: "update node where node = [Node Name] set [New Name]",
     desc: "Update the node with node's name.",
-    area: "tree",
-  },
-  {
-    id: 30,
-    cmd: "close map tree",
-    desc: "Close opened map tree.",
     area: "tree",
   },
   {

@@ -53,6 +53,7 @@ export function responseTextOutput(
 }
 
 export function capitalized(str: string) {
+  str = str.trim() 
   const firstChar = str.charAt(0).toUpperCase();
   return firstChar + str.slice(1);
 }

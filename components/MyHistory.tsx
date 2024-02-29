@@ -4,17 +4,14 @@ import { useTaskStore } from "@/store/TaskStore";
 import { formatDuration } from "@/utils/timerUtils";
 import { FC, useEffect } from "react";
 
-const MyHistory: FC<{ fileName: string; username: string }> = ({
-  fileName,
-  username,
-}) => {
+const MyHistory: FC<{ username: string }> = ({ username }) => {
   const { history, isLoading, error, fetchHistory } = useTaskStore();
 
   useEffect(() => {
-    if (fileName) {
-      fetchHistory(fileName, username);
+    if (username) {
+      fetchHistory(username);
     }
-  }, [fileName, fetchHistory, username]);
+  }, [fetchHistory, username]);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -30,7 +27,7 @@ const MyHistory: FC<{ fileName: string; username: string }> = ({
         <span className="flex flex-1 self-center">Created at</span>
       </div>
       {history &&
-        history.children.map((el, i) => (
+        history.myHistory.map((el, i) => (
           <div
             key={i}
             className={`flex items-center justify-between ${

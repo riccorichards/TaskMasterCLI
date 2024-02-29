@@ -2,16 +2,16 @@ import { retrieveFile } from "@/utils/treeUtils";
 import RoadMapEchart from "echarts-for-react";
 import { FC, useEffect, useState } from "react";
 
-const TreeMap: FC<{ fileName: string; close?: boolean }> = ({
-  fileName,
+const TreeMap: FC<{ username: string; close?: boolean }> = ({
+  username,
   close = false,
 }) => {
   const [mapTree, setMapTree] = useState<any>(null);
 
   useEffect(() => {
-    if (fileName) {
+    if (username) {
       const handleRetrieveFile = async () => {
-        const res = await retrieveFile(fileName);
+        const res = await retrieveFile(username);
 
         if (res.status === "success") return setMapTree(res.data);
 
@@ -20,7 +20,7 @@ const TreeMap: FC<{ fileName: string; close?: boolean }> = ({
 
       handleRetrieveFile();
     }
-  }, [fileName]);
+  }, [username]);
 
   if (!mapTree) return <div>Loading...</div>;
 
@@ -32,7 +32,7 @@ const TreeMap: FC<{ fileName: string; close?: boolean }> = ({
     series: [
       {
         type: "tree",
-        data: [mapTree.userTree],
+        data: [mapTree],
         left: "2%",
         right: "2%",
         top: "40.5%",

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
-import fs from "fs/promises";
-import path from "path";
+import connectToMongoDB from "@/lib/connectToMongo";
+import History from "@/model/History";
 
 export const POST = async (req: NextRequest) => {
   try {
+    await connectToMongoDB();
     const body = await req.json();
     const { username, password } = body;
     const salt = await bcrypt.genSalt(10);
@@ -24,24 +25,14 @@ export const POST = async (req: NextRequest) => {
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
 
-    const newHistory = {
-      username,
-      children: [],
-    };
+    const newUserHistory = await History.create({ username, history: [] });
 
-    const filePath = path.join(
-      ".",
-      "tempCont",
-      "history",
-      `history-${username}.json`
-    );
-
-    await fs.writeFile(filePath, JSON.stringify(newHistory, null, 2), "utf-8");
-
-    return new NextResponse(JSON.stringify(username, null, 2), {
-      status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
+    if (newUserHistory) {
+      return new NextResponse(JSON.stringify(username, null, 2), {
+        status: 201,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
   } catch (error) {
     return new NextResponse(
       JSON.stringify({

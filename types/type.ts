@@ -84,7 +84,7 @@ export interface NotesType {
 
 export interface HistoryType {
   username: string;
-  children: HistoryTastType[];
+  myHistory: HistoryTastType[];
 }
 
 export interface LogInType {

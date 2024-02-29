@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import connectToMongoDB from "@/lib/connectToMongo";
-import History from "@/model/History";
+import path from "path";
+import fs from "fs/promises";
 import { DailyTaskType } from "@/types/type";
+import { prisma } from "@/lib/prisma";
+import { findFileByFileName } from "@/utils/fileUtils";
 
 export const POST = async (
   req: NextRequest,
   { params }: { params: { username: string } }
 ) => {
   try {
-    await connectToMongoDB();
     const body = await req.json();
     const { tasks } = body;
     const { username } = params;
@@ -24,15 +24,30 @@ export const POST = async (
       );
     }
 
-    let userHistory = await History.findOne({ username });
+    const dir = path.join(process.cwd(), "tempCont", "history");
+    const fileName = `history-${username}.json`;
+    const filePath = await findFileByFileName(dir, fileName);
 
-    if (!userHistory) {
-      userHistory = await History.create({ username, myHistory: [] });
+    if (!filePath) {
+      return new NextResponse(
+        JSON.stringify({
+          error: "Failed to find file",
+          details: filePath,
+        }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    const fileData = await fs.readFile(filePath, "utf8");
+    const historyFile = JSON.parse(fileData);
+
+    if (!historyFile.children) {
+      historyFile.children = [];
     }
 
     tasks.forEach((task: DailyTaskType) => {
       const { title, desc, done, spendMs } = task;
-      userHistory.myHistory.push({
+      historyFile.children.push({
         workSpace: title,
         task: desc,
         done,
@@ -41,20 +56,20 @@ export const POST = async (
       });
     });
 
-    await userHistory.save();
+    await fs.writeFile(filePath, JSON.stringify(historyFile, null, 2), "utf8");
 
     const deletePromises = tasks.map(
       async (task: DailyTaskType) =>
         await prisma.dailyTask.delete({ where: { id: task.id } })
     );
-
-    await Promise.all(
-      deletePromises.map((p) => p.catch((e) => console.error(e)))
-    );
+    await Promise.all(deletePromises);
 
     return new NextResponse(
       JSON.stringify("Successfully updated and removed tasks.", null, 2),
-      { status: 200, headers: { "Content-Type": "application/json" } }
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
     );
   } catch (error) {
     return new NextResponse(

@@ -2,28 +2,26 @@
 
 import { useTaskStore } from "@/store/TaskStore";
 import { dailyProgress } from "@/utils/statsUtils";
-import { divide } from "lodash";
 import { FC, useEffect } from "react";
 import DailyResultChart from "./DailyResultChart";
 const DailyProgress: FC<{
-  fileName: string;
   username: string;
   chart: boolean;
-}> = ({ fileName, username, chart = false }) => {
+}> = ({username, chart = false }) => {
   const { history, isLoading, error, fetchHistory } = useTaskStore();
   useEffect(() => {
-    if (fileName) {
+    if (username) {
       if (!history) {
-        fetchHistory(fileName, username);
+        fetchHistory(username);
       }
     }
-  }, [fileName, history, fetchHistory, username]);
+  }, [history, fetchHistory, username]);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
   if (!history) return null;
-  const result = dailyProgress(history.children);
+  const result = dailyProgress(history.myHistory);
 
   return (
     <div>

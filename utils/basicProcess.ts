@@ -11,7 +11,12 @@ import { parametersType } from "./defineProcess";
 import { Command } from "@/app/page";
 import { capitalized, logout, responseTextOutput } from "./toolsUtils";
 import { addTask, editTask, removeTask } from "./taskUtils";
-import { addHrsForPeriod, addPeriod } from "./statsUtils";
+import {
+  addHrsForPeriod,
+  addPeriod,
+  updatePeriodDuration,
+  validateDate,
+} from "./statsUtils";
 import { addNote, doneNote, removeNote } from "./noteUtils";
 import React from "react";
 
@@ -33,7 +38,10 @@ const doneNoteRegax =
 const removeNoteRegax = /^remove note where id =\s*(.+)$/;
 const addJourneyDurationRegax = /^insert learning duration\s*(.+)$/;
 const insertTimeForPerionRegax = /^insert time for learning duration\s*(.+)$/;
-
+const updatePeriodTime =
+  /^update learning duration for -U\s*(.+?)\s* set duration =\s*(.+?),\s*hours =\s*(.+)$/;
+const validPeriodFormat =
+  /^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
 export const basicProcess = async ({
   originalCommand,
   command,
@@ -81,6 +89,14 @@ export const basicProcess = async ({
     const matched = command.match(addJourneyDurationRegax);
     if (matched) {
       const [, period] = matched;
+      const check = validateDate(period);
+      if (!check)
+        return responseTextOutput(
+          originalCommand,
+          "error",
+          "",
+          "Invalid period format => 2024-01-31"
+        );
       const res = await addPeriod({ period, username });
       if (res.status === "success")
         return responseTextOutput(
@@ -104,6 +120,32 @@ export const basicProcess = async ({
           originalCommand,
           "success",
           "Period time was added!"
+        );
+
+      return responseTextOutput(originalCommand, "error", "", res.message);
+    }
+  } else if (updatePeriodTime.test(command)) {
+    const matched = command.match(updatePeriodTime);
+    if (matched) {
+      const [, username, period, hrs] = matched;
+      const check = validateDate(period);
+      if (!check)
+        return responseTextOutput(
+          originalCommand,
+          "error",
+          "",
+          "Invalid period format => 2024-01-31"
+        );
+      const res = await updatePeriodDuration({
+        username,
+        period,
+        sumTimeHrs: Number(hrs),
+      });
+      if (res.status === "success")
+        return responseTextOutput(
+          originalCommand,
+          "success",
+          "updated period time!"
         );
 
       return responseTextOutput(originalCommand, "error", "", res.message);
@@ -181,7 +223,14 @@ export const basicProcess = async ({
     const matched = command.match(insertNoteRegax);
     if (matched) {
       const [, title, desc, deadline] = matched;
-
+      const check = validateDate(deadline);
+      if (!check)
+        return responseTextOutput(
+          originalCommand,
+          "error",
+          "",
+          "Invalid deadline format => 2024-01-31"
+        );
       const res = await addNote({ title, desc, deadline, username });
       if (res.status === "success")
         return responseTextOutput(
@@ -258,36 +307,32 @@ export const basicProcess = async ({
       props: { fileName, username },
     };
   } else if (command === "top learned topics") {
-    const fileName = "history-ricco.json";
     return {
       type: "component",
       command: originalCommand,
       componentOutput: TopTopics,
-      props: { fileName, username },
+      props: { username },
     };
   } else if (command === "top learned topics with chart") {
-    const fileName = "history-ricco.json";
     return {
       type: "component",
       command: originalCommand,
       componentOutput: TopTopics,
-      props: { fileName, chart: true, username },
+      props: { chart: true, username },
     };
   } else if (command === "daily result") {
-    const fileName = `history-${username}.json`;
     return {
       type: "component",
       command: originalCommand,
       componentOutput: DailyProgress,
-      props: { fileName, username },
+      props: { username },
     };
   } else if (command === "daily result with chart") {
-    const fileName = `history-${username}.json`;
     return {
       type: "component",
       command: originalCommand,
       componentOutput: DailyProgress,
-      props: { fileName, username, chart: true },
+      props: { username, chart: true },
     };
   } else if (command === "quit") {
     return logout();

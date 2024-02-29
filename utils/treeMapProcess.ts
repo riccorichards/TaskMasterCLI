@@ -1,5 +1,5 @@
 import TreeMap from "@/components/TreeMap";
-import { capitalized, logout, responseTextOutput } from "./toolsUtils";
+import { logout, responseTextOutput } from "./toolsUtils";
 import {
   insertChildToNode,
   insertMainNode,
@@ -23,24 +23,23 @@ export const treeMapProcess = async ({
   setTerminalPlace,
   username,
 }: TreeMapType): Promise<Command | void> => {
-  const insertMainNodeRegax = /^insert node\s*(.+)$/;
+  const insertMainNodeRegax = /^insert node:\s*(.+)$/;
   const insertChild = /^insert child where node =\s*(.+?)\s*add\s*(.+)$/;
   const removeNodeRegax = /^remove node where node =\s*(.+)$/;
   const updateNode = /^update node where node =\s*(.+?)\s*set\s*(.+)$/;
 
-  const fileName = `mapTree-${username}.json`;
   if (insertMainNodeRegax.test(command)) {
     const matched = command.match(insertMainNodeRegax);
     if (matched) {
-      const [, mainNode] = matched;
-      const res = await insertMainNode({ mainNode, username });
+      const [, node] = matched;
+      const res = await insertMainNode({ node, username });
 
       if (res.status === "success") {
         return {
           type: "component",
           command: originalCommand,
           componentOutput: TreeMap,
-          props: { fileName },
+          props: { username },
         };
       }
 
@@ -66,16 +65,16 @@ export const treeMapProcess = async ({
       type: "component",
       command: originalCommand,
       componentOutput: TreeMap,
-      props: { fileName },
+      props: { username },
     };
   } else if (insertChild.test(command)) {
     const matched = command.match(insertChild);
     if (matched) {
-      const [, nodeName, childName] = matched;
+      const [, path, node] = matched;
       const res = await insertChildToNode({
-        nodeName: capitalized(nodeName),
-        childName: capitalized(childName),
-        fileName,
+        path,
+        node,
+        username,
       });
 
       if (res.status === "success")
@@ -83,7 +82,7 @@ export const treeMapProcess = async ({
           type: "component",
           command: originalCommand,
           componentOutput: TreeMap,
-          props: { fileName },
+          props: { username },
         };
 
       return responseTextOutput(originalCommand, "error", "", res.message);
@@ -91,16 +90,16 @@ export const treeMapProcess = async ({
   } else if (removeNodeRegax.test(command)) {
     const matched = command.match(removeNodeRegax);
     if (matched) {
-      const [, nodeName] = matched;
+      const [, node] = matched;
       const method = command.split(" ")[0];
-      const res = await updateNodeInTree({ fileName, nodeName, method });
+      const res = await updateNodeInTree({ username, node, method });
 
       if (res.status === "success")
         return {
           type: "component",
           command: originalCommand,
           componentOutput: TreeMap,
-          props: { fileName },
+          props: { username },
         };
 
       return responseTextOutput(originalCommand, "error", "", res.message);
@@ -108,11 +107,11 @@ export const treeMapProcess = async ({
   } else if (updateNode.test(command)) {
     const matched = command.match(updateNode);
     if (matched) {
-      const [, nodeName, updatedNodeName] = matched;
+      const [, node, updatedNodeName] = matched;
       const method = command.split(" ")[0];
       const res = await updateNodeInTree({
-        fileName,
-        nodeName,
+        username,
+        node,
         method,
         updatedNodeName,
       });
@@ -122,18 +121,11 @@ export const treeMapProcess = async ({
           type: "component",
           command: originalCommand,
           componentOutput: TreeMap,
-          props: { fileName },
+          props: { username },
         };
 
       return responseTextOutput(originalCommand, "error", "", res.message);
     }
-  } else if (command === "close map tree") {
-    return {
-      type: "component",
-      command: originalCommand,
-      componentOutput: TreeMap,
-      props: { fileName, close: true },
-    };
   } else if (command === "quit") {
     return logout();
   } else {
