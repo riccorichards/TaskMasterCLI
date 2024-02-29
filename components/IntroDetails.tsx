@@ -38,6 +38,12 @@ const IntroDetails = () => {
           [Password]
         </i>
       </span>
+      <span className="text-white">
+        {"//"}{" "}
+        <i>
+          <b>Demo account:</b> login -U demo -p 123456789
+        </i>
+      </span>
     </div>
   );
 };
