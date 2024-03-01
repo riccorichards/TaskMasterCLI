@@ -1,31 +1,39 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# CLI Task Master
+
+Welcome to CLI Task Master, your next-generation task management and learning optimization tool. Designed for developers, learners, and productivity enthusiasts, CLI Task Master combines task tracking with insightful analytics to propel your daily productivity and learning journey to new heights.
+
+## Features
+
+- **Task Management**: Easily insert daily tasks and notes with deadlines to keep your workflow organized.
+- **Time Tracking**: Define and time your tasks with precision, allowing for effective management of your day.
+- **Dynamic Task Updates**: Update or remove tasks as your priorities evolve throughout the day.
+- **Day Finish Insights**: Conclude your day with actionable insights, moving incomplete tasks to your history for reflection and analytics.
+- **Learning Roadmaps**: Craft your personalized learning path with main topics and subtopics, structuring your progress.
+- **Insightful Analytics**: Dive deep into your learning process with statistics that track your daily results, top learned topics, and more.
+
+## Technologies 
+
+CLI Task Master is built with a cutting-edge stack:
+
+- React & Next.js for dynamic UI and server-side rendering
+- Zustand for efficient state management
+- Prisma and MongoDB for robust database solutions
+- Bcrypt for secure authentication
+- Axios for seamless API requests
+- Lodash for utility functions
+- Echarts for react to visualize progress with interactive charts
+- TailwindCSS & PostCSS for a sleek, responsive design
 
 ## Getting Started
 
-First, run the development server:
+To get started with CLI Task Master, clone this repository and install the dependencies:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/yourusername/cli-task-master.git
+cd cli-task-master
+npm install
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+ interactive Next.js tutorial.
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
 
