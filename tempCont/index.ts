@@ -31,7 +31,7 @@ export const existingCmds = [
   },
   {
     id: 50,
-    cmd: "update learning duration for -U [Username] set [20XX-12-01], hours = [new Time]",
+    cmd: "update learning duration for -U [Username] set duration = [20XX-12-01], hours = [new Time]",
     desc: "Update already existing period information.",
     area: "stats",
   },
