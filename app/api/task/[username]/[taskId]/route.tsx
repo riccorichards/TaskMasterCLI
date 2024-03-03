@@ -60,7 +60,9 @@ export const PUT = async (
         where: { id: taskId, username },
         data: {
           done,
-          spendMs,
+          spendMs: {
+            increment: spendMs,
+          },
         },
       });
     }
