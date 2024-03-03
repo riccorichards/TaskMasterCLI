@@ -121,7 +121,7 @@ export function toplearnedTopics(tasks: HistoryTastType[]) {
     const value = workSpaceCompletion + workSpaceDuration + workSpaceLen;
     result.push({
       name: workSpace,
-      value,
+      value: value / 1000,
     });
   }
 
