@@ -38,7 +38,7 @@ const MyHistory: FC<{ username: string }> = ({ username }) => {
             <span className="flex flex-1 self-center">{el.workSpace}</span>
             <span className="flex flex-1 self-center">{el.task}</span>
             <span className="flex flex-1 self-center">
-              {formatDuration(el.duration)}
+              {formatDuration(el.duration / 1000)}
             </span>
             <span className="flex flex-1 self-center">
               {el.done ? "True" : "False"}
