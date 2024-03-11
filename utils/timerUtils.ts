@@ -49,6 +49,6 @@ export async function defineCorrectTitle(
   if (dailyTasks.status === "error") return dailyTasks.message;
 
   const { data } = dailyTasks;
-  const res = data?.find((task) => task.title.toLowerCase() === targetTitle);
+  const res = data?.find((task) => task.title === targetTitle);
   return res ? (res.id as number) : null;
 }
