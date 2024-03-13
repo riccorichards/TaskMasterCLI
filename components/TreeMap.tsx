@@ -63,7 +63,7 @@ const TreeMap: FC<{ username: string; close?: boolean }> = ({
   };
 
   return (
-    <div className="fixed top-0 right-5 h-full w-1/3 rounded-md bg-black flex justify-center items-center z-10">
+    <div className="fixed top-0 right-5 h-full w-2/3 rounded-md bg-black flex justify-center items-center z-10">
       {mapTree && (
         <RoadMapEchart
           option={option}
